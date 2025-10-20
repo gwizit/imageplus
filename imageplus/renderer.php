@@ -79,8 +79,86 @@ class local_imageplus_renderer extends plugin_renderer_base {
             .output-error { color: #fc8181; }
             .section-header { background: #f8f9fa; padding: 12px 15px; border-bottom: 2px solid #dee2e6;
                             font-weight: bold; margin-top: 20px; border-radius: 6px 6px 0 0; }
+            
+            /* Image preview modal */
+            .image-preview-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0;
+                                  width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); }
+            .image-preview-content { margin: auto; display: block; max-width: 90vw; max-height: 90vh;
+                                    object-fit: contain; position: absolute; top: 50%; left: 50%;
+                                    transform: translate(-50%, -50%); }
+            .image-preview-close { position: absolute; top: 20px; right: 40px; color: #f1f1f1;
+                                  font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10000; }
+            .image-preview-close:hover, .image-preview-close:focus { color: #bbb; }
+            .image-preview-caption { margin: auto; display: block; width: 80%; max-width: 700px;
+                                    text-align: center; color: #ccc; padding: 10px 0; position: absolute;
+                                    bottom: 20px; left: 50%; transform: translateX(-50%); }
         ';
         $output .= html_writer::end_tag('style');
+        
+        // Add image preview modal HTML
+        $output .= '<div id="imagePreviewModal" class="image-preview-modal">';
+        $output .= '  <span class="image-preview-close">&times;</span>';
+        $output .= '  <img class="image-preview-content" id="imagePreviewImg">';
+        $output .= '  <div class="image-preview-caption" id="imagePreviewCaption"></div>';
+        $output .= '</div>';
+        
+        // Add JavaScript for image preview
+        $output .= html_writer::script("
+            (function() {
+                var modal = document.getElementById('imagePreviewModal');
+                var modalImg = document.getElementById('imagePreviewImg');
+                var captionText = document.getElementById('imagePreviewCaption');
+                var closeBtn = document.querySelector('.image-preview-close');
+                
+                // Function to close and clear modal
+                function closeModal() {
+                    modal.style.display = 'none';
+                    modalImg.src = '';  // Clear the image
+                    captionText.innerHTML = '';
+                }
+                
+                // Close modal when clicking X or outside image
+                closeBtn.onclick = closeModal;
+                modal.onclick = function(e) { 
+                    if (e.target === modal || e.target === closeBtn) {
+                        closeModal();
+                    }
+                }
+                
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modal.style.display === 'block') {
+                        closeModal();
+                    }
+                });
+                
+                // Add click handlers to all file links
+                document.addEventListener('click', function(e) {
+                    var target = e.target;
+                    if (target.classList.contains('file-link') && target.tagName === 'A') {
+                        var href = target.getAttribute('href');
+                        var filename = target.textContent || target.innerText;
+                        
+                        // Check if it's an image file by checking both filename and href
+                        if (href && (/\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(filename) || /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(href))) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Clear old image first
+                            modalImg.src = '';
+                            captionText.innerHTML = filename;
+                            
+                            // Show modal and load new image
+                            modal.style.display = 'block';
+                            modalImg.src = href;
+                            
+                            return false;
+                        }
+                    }
+                });
+            })();
+        ");
+
 
         $output .= $this->heading(get_string('resultstitle', 'local_imageplus'));
 
@@ -259,11 +337,20 @@ class local_imageplus_renderer extends plugin_renderer_base {
             $completemsg = get_string('operationcomplete', 'local_imageplus') . ' ';
             if ($stats['files_replaced'] > 0 || $stats['db_files_replaced'] > 0) {
                 $completemsg .= get_string('operationcomplete_execute', 'local_imageplus');
+                // Add cache clearing link
+                $cachepurgeurl = new moodle_url('/admin/purgecaches.php', ['confirm' => 1, 'sesskey' => sesskey()]);
+                $completemsg .= ' ' . get_string('operationcomplete_clearcache', 'local_imageplus', $cachepurgeurl->out());
                 $output .= html_writer::div($completemsg, 'alert alert-success');
             } else {
                 $output .= html_writer::div($completemsg, 'alert alert-info');
             }
         }
+        
+        // Donation message
+        $output .= html_writer::div(
+            get_string('donation_message', 'local_imageplus'),
+            'alert alert-warning text-center'
+        );
 
         // Back button.
         $output .= html_writer::div(

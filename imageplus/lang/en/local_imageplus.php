@@ -108,7 +108,8 @@ $string['nofilesreplaced'] = 'No files were replaced';
 $string['nofilesreplaced_desc'] = 'No files were successfully replaced. Check the error messages above for details.';
 $string['operationcomplete'] = 'Operation completed!';
 $string['operationcomplete_preview'] = 'This was a preview - no files were actually modified.';
-$string['operationcomplete_execute'] = 'Files have been updated. You may want to clear Moodle caches.';
+$string['operationcomplete_execute'] = 'Files have been updated.';
+$string['operationcomplete_clearcache'] = 'You may want to <a href="{$a}" target="_blank">clear Moodle caches</a>.';
 $string['preview_mode_warning'] = '<strong>PREVIEW MODE:</strong> No files have been replaced. This was a preview run to show what would be changed. To actually replace files, select "Execute changes" mode in Step 3.';
 $string['filesreplaced_fs'] = 'Files Replaced (File System)';
 $string['filesreplaced_db'] = 'Files Replaced (Database)';
@@ -141,6 +142,8 @@ $string['error_invalidfiletype_video'] = 'Invalid file type. You selected to rep
 $string['error_invalidfiletype_audio'] = 'Invalid file type. You selected to replace AUDIO files in Step 1. Please upload an MP3, WAV, OGG, or M4A audio file.';
 $string['error_invalidfile'] = 'Invalid file. Please check the file and try again.';
 $string['error_extensionmismatch'] = 'Extension mismatch: {$a->source} file cannot replace {$a->target} files. Please upload a file with the correct extension.';
+$string['error_crossformat_disabled'] = 'Cross-format image replacement is currently disabled. You have selected {$a->targetcount} file(s) with extension(s): {$a->targetexts}, but uploaded a {$a->sourceext} file. To proceed, either: (1) Enable the "Allow cross-format image replacement" checkbox in Step 3, or (2) Upload a file with a matching extension ({$a->matchingexts}).';
+$string['error_crossformat_nogd'] = 'Cross-format image replacement is not available on this server. The PHP GD library is not installed, which is required for converting between image formats. You have selected {$a->targetcount} file(s) with extension(s): {$a->targetexts}, but uploaded a {$a->sourceext} file. Please upload a file with a matching extension ({$a->matchingexts}), or contact your system administrator to install the GD library for PHP.';
 $string['error_uploadfailed'] = 'Failed to save uploaded file.';
 $string['error_nopermission'] = 'You do not have permission to use this tool.';
 $string['error_nofilesselected'] = 'Please select at least one file to replace.';
@@ -150,6 +153,7 @@ $string['error_requiresiteadmin'] = 'Access denied. This tool is only available 
 // Warnings.
 $string['warning_nogd'] = 'GD library is not available. Cross-format image conversion is disabled. Only exact format matching (JPG→JPG, PNG→PNG) is supported.';
 $string['warning_nogd_detailed'] = 'Warning: The GD library is not installed or enabled on this server. Image processing features are limited. Cross-format image conversion (e.g., PNG to JPG) is disabled. You can still replace images with the exact same format (e.g., JPG with JPG). For full functionality, please ask your system administrator to install and enable the PHP GD extension.';
+$string['warning_selectall'] = '⚠️ You have selected all files. It is strongly recommended to manually review each file before replacing to ensure you are replacing the correct files.';
 
 // Settings.
 $string['settingstitle'] = 'ImagePlus Settings';
@@ -175,4 +179,5 @@ $string['privacy:metadata:local_imageplus_log:timemodified'] = 'When the operati
 $string['eventimagereplaced'] = 'Images replaced';
 
 // Credits.
-$string['credits'] = 'Developed by <a href="https://gwizit.com" target="_blank">G Wiz IT Solutions</a>';
+$string['credits'] = 'Developed by <a href="https://gwizit.com" target="_blank">G Wiz IT Solutions</a> | <a href="https://square.link/u/9SpmIaIW" target="_blank">💝 Support This Project</a>';
+$string['donation_message'] = '💝 <strong>Found this plugin useful?</strong> Please consider <a href="https://square.link/u/9SpmIaIW" target="_blank">making a donation</a> to help us maintain and improve this plugin. Your support keeps this project alive!';

@@ -500,13 +500,13 @@ class replacer {
      * @return bool Success status
      */
     public function process_filesystem_files($files) {
-        if (empty($imagefiles)) {
+        if (empty($files)) {
             return true;
         }
 
-        $this->add_output("\nProcessing " . count($imagefiles) . " file system images...", 'info');
+        $this->add_output("\nProcessing " . count($files) . " file system images...", 'info');
 
-        foreach ($imagefiles as $index => $filepath) {
+        foreach ($files as $index => $filepath) {
             $this->stats['files_found']++;
             $filename = basename($filepath);
             $relativepath = str_replace($this->moodleroot . '/', '', $filepath);
@@ -534,7 +534,7 @@ class replacer {
     public function process_database_files($dbfiles) {
         global $CFG;
 
-        if (empty($dbimages)) {
+        if (empty($dbfiles)) {
             return true;
         }
 

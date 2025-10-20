@@ -38,11 +38,15 @@ if ($hassiteconfig) {
     ));
 
     // Default execution mode.
-    $settings->add(new admin_setting_configcheckbox(
+    $settings->add(new admin_setting_configselect(
         'local_imageplus/defaultmode',
         get_string('defaultmode', 'local_imageplus'),
         get_string('defaultmode_desc', 'local_imageplus'),
-        1
+        'preview',
+        [
+            'preview' => get_string('mode_preview', 'local_imageplus'),
+            'execute' => get_string('mode_execute', 'local_imageplus'),
+        ]
     ));
 
     // Default preserve permissions.
@@ -50,7 +54,7 @@ if ($hassiteconfig) {
         'local_imageplus/defaultpreservepermissions',
         get_string('defaultpreservepermissions', 'local_imageplus'),
         get_string('defaultpreservepermissions_desc', 'local_imageplus'),
-        1
+        0
     ));
 
     // Default search database.
@@ -66,7 +70,7 @@ if ($hassiteconfig) {
         'local_imageplus/defaultsearchfilesystem',
         get_string('defaultsearchfilesystem', 'local_imageplus'),
         get_string('defaultsearchfilesystem_desc', 'local_imageplus'),
-        1
+        0
     ));
 
     $ADMIN->add('localplugins', $settings);

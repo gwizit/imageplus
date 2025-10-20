@@ -62,6 +62,23 @@ $defaultpreservepermissions = get_config('local_imageplus', 'defaultpreserveperm
 $defaultsearchdatabase = get_config('local_imageplus', 'defaultsearchdatabase');
 $defaultsearchfilesystem = get_config('local_imageplus', 'defaultsearchfilesystem');
 
+// Set defaults if not configured.
+if ($defaultsearchterm === false) {
+    $defaultsearchterm = '';
+}
+if ($defaultmode === false) {
+    $defaultmode = 'preview';
+}
+if ($defaultpreservepermissions === false) {
+    $defaultpreservepermissions = 0;
+}
+if ($defaultsearchdatabase === false) {
+    $defaultsearchdatabase = 1;
+}
+if ($defaultsearchfilesystem === false) {
+    $defaultsearchfilesystem = 0;
+}
+
 // Get current step.
 $step = optional_param('step', 1, PARAM_INT);
 $backbtn = optional_param('backbtn', '', PARAM_RAW);
@@ -78,12 +95,12 @@ if ($startover) {
 // Initialize or retrieve session data.
 if (!isset($SESSION->imageplus_wizard)) {
     $SESSION->imageplus_wizard = new stdClass();
-    $SESSION->imageplus_wizard->searchterm = $defaultsearchterm ?: '';
+    $SESSION->imageplus_wizard->searchterm = $defaultsearchterm;
     $SESSION->imageplus_wizard->filetype = 'image';
-    $SESSION->imageplus_wizard->searchdatabase = $defaultsearchdatabase ?: 1;
-    $SESSION->imageplus_wizard->searchfilesystem = $defaultsearchfilesystem ?: 0;
-    $SESSION->imageplus_wizard->preservepermissions = $defaultpreservepermissions ?: 0;
-    $SESSION->imageplus_wizard->executionmode = $defaultmode ?: 'preview';
+    $SESSION->imageplus_wizard->searchdatabase = $defaultsearchdatabase;
+    $SESSION->imageplus_wizard->searchfilesystem = $defaultsearchfilesystem;
+    $SESSION->imageplus_wizard->preservepermissions = $defaultpreservepermissions;
+    $SESSION->imageplus_wizard->executionmode = $defaultmode;
     $SESSION->imageplus_wizard->allowimageconversion = 1;
     $SESSION->imageplus_wizard->filesystemfiles = [];
     $SESSION->imageplus_wizard->databasefiles = [];
@@ -222,6 +239,9 @@ if ($fromform = $mform->get_data()) {
         $SESSION->imageplus_wizard->executionmode = $fromform->executionmode;
         if (isset($fromform->allowimageconversion)) {
             $SESSION->imageplus_wizard->allowimageconversion = $fromform->allowimageconversion;
+        } else {
+            // If checkbox not in form (e.g., GD not available), set to 0
+            $SESSION->imageplus_wizard->allowimageconversion = 0;
         }
         
         // Handle file upload from filepicker.
@@ -273,6 +293,75 @@ if ($fromform = $mform->get_data()) {
             $errorkey = 'error_invalidfiletype_' . $filetype;
             redirect($PAGE->url . '?step=3', get_string($errorkey, 'local_imageplus'),
                 null, \core\output\notification::NOTIFY_ERROR);
+        }
+        
+        // NEW: Validate cross-format compatibility for images when conversion is disabled.
+        if ($filetype === 'image') {
+            // Check if cross-format conversion is disabled (either by user or by missing GD library).
+            $allowimageconversion = isset($SESSION->imageplus_wizard->allowimageconversion) 
+                ? $SESSION->imageplus_wizard->allowimageconversion 
+                : 1;
+            $gdavailable = \local_imageplus\replacer::is_gd_available();
+            
+            // If conversion is disabled or GD is not available, verify all selected files match the uploaded file extension.
+            if (!$allowimageconversion || !$gdavailable) {
+                // Get uploaded file extension.
+                $uploadedext = strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION));
+                // Normalize extensions.
+                if ($uploadedext === 'jpg') {
+                    $uploadedext = 'jpeg';
+                }
+                
+                // Collect all unique extensions from selected files.
+                $targetextensions = [];
+                
+                // Check filesystem files.
+                foreach ($SESSION->imageplus_wizard->selectedfilesystem as $filepath) {
+                    $ext = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
+                    if ($ext === 'jpg') {
+                        $ext = 'jpeg';
+                    }
+                    $targetextensions[$ext] = $ext;
+                }
+                
+                // Check database files.
+                foreach ($SESSION->imageplus_wizard->databasefiles as $dbfile) {
+                    if (in_array($dbfile->id, $SESSION->imageplus_wizard->selecteddatabase)) {
+                        $ext = strtolower(pathinfo($dbfile->filename, PATHINFO_EXTENSION));
+                        if ($ext === 'jpg') {
+                            $ext = 'jpeg';
+                        }
+                        $targetextensions[$ext] = $ext;
+                    }
+                }
+                
+                // Remove the uploaded extension from target list to check if there are other formats.
+                unset($targetextensions[$uploadedext]);
+                
+                // If there are other extensions, show error.
+                if (!empty($targetextensions)) {
+                    // Add back the uploaded extension for display if some files do match.
+                    $allextensions = $targetextensions;
+                    $allextensions[$uploadedext] = $uploadedext;
+                    
+                    $errdata = new stdClass();
+                    $errdata->sourceext = strtoupper($uploadedext);
+                    $errdata->targetexts = strtoupper(implode(', ', array_values($allextensions)));
+                    $errdata->matchingexts = strtoupper(implode(', ', array_values($targetextensions)));
+                    $errdata->targetcount = count($SESSION->imageplus_wizard->selectedfilesystem) + 
+                                           count($SESSION->imageplus_wizard->selecteddatabase);
+                    
+                    // Different error message depending on whether GD is available or not.
+                    if (!$gdavailable) {
+                        $errormsg = get_string('error_crossformat_nogd', 'local_imageplus', $errdata);
+                    } else {
+                        $errormsg = get_string('error_crossformat_disabled', 'local_imageplus', $errdata);
+                    }
+                    
+                    redirect($PAGE->url . '?step=3', $errormsg,
+                        null, \core\output\notification::NOTIFY_ERROR);
+                }
+            }
         }
         
         // Sanitize filename to prevent directory traversal.
@@ -438,8 +527,86 @@ if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
             .section-header { background: #f8f9fa; padding: 12px 15px; border-bottom: 2px solid #dee2e6;
                             font-weight: bold; margin-top: 20px; border-radius: 6px 6px 0 0; }
             .select-all-btn { margin: 10px 0; }
+            
+            /* Image preview modal */
+            .image-preview-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0;
+                                  width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); }
+            .image-preview-content { margin: auto; display: block; max-width: 90vw; max-height: 90vh;
+                                    object-fit: contain; position: absolute; top: 50%; left: 50%;
+                                    transform: translate(-50%, -50%); }
+            .image-preview-close { position: absolute; top: 20px; right: 40px; color: #f1f1f1;
+                                  font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10000; }
+            .image-preview-close:hover, .image-preview-close:focus { color: #bbb; }
+            .image-preview-caption { margin: auto; display: block; width: 80%; max-width: 700px;
+                                    text-align: center; color: #ccc; padding: 10px 0; position: absolute;
+                                    bottom: 20px; left: 50%; transform: translateX(-50%); }
         ';
         echo html_writer::end_tag('style');
+        
+        // Add image preview modal HTML
+        echo '<div id="imagePreviewModal" class="image-preview-modal">';
+        echo '  <span class="image-preview-close">&times;</span>';
+        echo '  <img class="image-preview-content" id="imagePreviewImg">';
+        echo '  <div class="image-preview-caption" id="imagePreviewCaption"></div>';
+        echo '</div>';
+        
+        // Add JavaScript for image preview (runs once on page load)
+        echo html_writer::script("
+            (function() {
+                var modal = document.getElementById('imagePreviewModal');
+                var modalImg = document.getElementById('imagePreviewImg');
+                var captionText = document.getElementById('imagePreviewCaption');
+                var closeBtn = document.querySelector('.image-preview-close');
+                
+                // Function to close and clear modal
+                function closeModal() {
+                    modal.style.display = 'none';
+                    modalImg.src = '';  // Clear the image
+                    captionText.innerHTML = '';
+                }
+                
+                // Close modal when clicking X or outside image
+                closeBtn.onclick = closeModal;
+                modal.onclick = function(e) { 
+                    if (e.target === modal || e.target === closeBtn) {
+                        closeModal();
+                    }
+                }
+                
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modal.style.display === 'block') {
+                        closeModal();
+                    }
+                });
+                
+                // Add click handlers to all file links
+                document.addEventListener('click', function(e) {
+                    var target = e.target;
+                    if (target.classList.contains('file-link') && target.tagName === 'A') {
+                        var href = target.getAttribute('href');
+                        var filename = target.textContent || target.innerText;
+                        
+                        // Check if it's an image file by checking both filename and href
+                        if (href && (/\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(filename) || /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(href))) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Clear old image first
+                            modalImg.src = '';
+                            captionText.innerHTML = filename;
+                            
+                            // Show modal and load new image
+                            modal.style.display = 'block';
+                            modalImg.src = href;
+                            
+                            return false;
+                        }
+                    }
+                });
+            })();
+        ");
+
         
         echo html_writer::start_tag('form', [
             'method' => 'post',
@@ -484,8 +651,7 @@ if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
                 echo html_writer::link(
                     $fileurl,
                     s($basename),
-                    ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus'),
-                     'onclick' => 'event.stopPropagation();']
+                    ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus')]
                 );
                 echo html_writer::div($safefile, 'file-details');
                 echo html_writer::end_tag('label');
@@ -497,11 +663,18 @@ if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
             // JavaScript for select all - escape strings properly.
             $selectalltext = addslashes_js(get_string('selectall', 'local_imageplus'));
             $deselectalltext = 'Deselect All';
+            $warningtext = addslashes_js(get_string('warning_selectall', 'local_imageplus'));
             echo html_writer::script("
                 document.getElementById('select-all-fs').addEventListener('click', function(e) {
                     e.preventDefault();
                     var checkboxes = document.querySelectorAll('input.fs-checkbox');
                     var allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                    
+                    if (!allChecked) {
+                        // Selecting all - show warning
+                        alert('{$warningtext}');
+                    }
+                    
                     checkboxes.forEach(function(cb) {
                         cb.checked = !allChecked;
                     });
@@ -575,8 +748,7 @@ if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
                     echo html_writer::link(
                         $fileurl,
                         $safefilename,
-                        ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus'),
-                         'onclick' => 'event.stopPropagation();']
+                        ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus')]
                     );
                 } else {
                     echo html_writer::tag('span', $safefilename, ['class' => 'file-link']);
@@ -602,11 +774,18 @@ if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
             // JavaScript for select all - escape strings properly.
             $selectalltext = addslashes_js(get_string('selectall', 'local_imageplus'));
             $deselectalltext = 'Deselect All';
+            $warningtext = addslashes_js(get_string('warning_selectall', 'local_imageplus'));
             echo html_writer::script("
                 document.getElementById('select-all-db').addEventListener('click', function(e) {
                     e.preventDefault();
                     var checkboxes = document.querySelectorAll('input.db-checkbox');
                     var allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                    
+                    if (!allChecked) {
+                        // Selecting all - show warning
+                        alert('{$warningtext}');
+                    }
+                    
                     checkboxes.forEach(function(cb) {
                         cb.checked = !allChecked;
                     });

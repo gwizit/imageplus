@@ -7,10 +7,11 @@ Write-Host "By G Wiz IT Solutions" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Set locations
-$PluginDir = "F:\moodleimagereplacer\imageplus"
-$OutputDir = "F:\moodleimagereplacer"
-$OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.0.zip"
+# Set locations dynamically based on script location
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$PluginDir = Join-Path $ScriptDir "imageplus"
+$OutputDir = $ScriptDir
+$OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.2.zip"
 
 # Check if plugin directory exists
 if (-not (Test-Path $PluginDir)) {
@@ -32,7 +33,7 @@ if (Test-Path $OutputFile) {
     } catch {
         Write-Host "Could not remove existing file. Trying alternate name..." -ForegroundColor Yellow
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-        $OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.0-$timestamp.zip"
+        $OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.2-$timestamp.zip"
         Write-Host "New output file: $OutputFile" -ForegroundColor Cyan
     }
 }
@@ -66,7 +67,7 @@ try {
     if (Test-Path $OutputFile) { Remove-Item $OutputFile -Force }
     Move-Item $tempZip $OutputFile
     
-    Write-Host "✓ Package created successfully!" -ForegroundColor Green
+    Write-Host "Package created successfully!" -ForegroundColor Green
     Write-Host ""
     Write-Host "ZIP File: $OutputFile" -ForegroundColor Cyan
     
@@ -78,7 +79,7 @@ try {
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host "Next Steps:" -ForegroundColor Yellow
     Write-Host "1. Upload the ZIP to your Moodle site" -ForegroundColor White
-    Write-Host "   (Site admin → Plugins → Install plugins)" -ForegroundColor White
+    Write-Host "   (Site admin -> Plugins -> Install plugins)" -ForegroundColor White
     Write-Host "2. Or extract and copy 'imageplus' folder" -ForegroundColor White
     Write-Host "   to [moodle]/local/ directory" -ForegroundColor White
     Write-Host "========================================" -ForegroundColor Cyan
@@ -88,7 +89,3 @@ try {
     Write-Host $_.Exception.Message -ForegroundColor Red
     exit 1
 }
-
-Write-Host ""
-Write-Host "Press any key to exit..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
