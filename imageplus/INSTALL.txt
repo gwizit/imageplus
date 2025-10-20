@@ -1,6 +1,6 @@
 # Moodle ImagePlus - Installation Package
 
-This archive contains the ImagePlus plugin for Moodle 5.1+
+This archive contains the ImagePlus plugin for Moodle 4.3 to 5.1+
 
 ## Package Contents
 

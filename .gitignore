@@ -1,0 +1,22 @@
+# Exclude package ZIP files from version control
+*.zip
+
+# Exclude other build artifacts
+*.tar.gz
+*.rar
+
+# Exclude OS-specific files
+.DS_Store
+Thumbs.db
+
+# Exclude editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Exclude temporary files
+*.tmp
+*.bak
+*.log

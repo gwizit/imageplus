@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_imageplus';
-$plugin->version = 2025101901;  // YYYYMMDDXX format.
-$plugin->requires = 2024042200; // Moodle 5.0 minimum version (lowered for compatibility).
+$plugin->component = '';
+$plugin->version = 2025101902;  // YYYYMMDDXX format.
+$plugin->requires = 2023042400; // Moodle 4.3 minimum version.
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v3.0.2';
+$plugin->release = 'v3.0.3';

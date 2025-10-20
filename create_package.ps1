@@ -11,7 +11,7 @@ Write-Host ""
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $PluginDir = Join-Path $ScriptDir "imageplus"
 $OutputDir = $ScriptDir
-$OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.2.zip"
+$OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.3.zip"
 
 # Check if plugin directory exists
 if (-not (Test-Path $PluginDir)) {
@@ -33,7 +33,7 @@ if (Test-Path $OutputFile) {
     } catch {
         Write-Host "Could not remove existing file. Trying alternate name..." -ForegroundColor Yellow
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-        $OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.2-$timestamp.zip"
+        $OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.3-$timestamp.zip"
         Write-Host "New output file: $OutputFile" -ForegroundColor Cyan
     }
 }

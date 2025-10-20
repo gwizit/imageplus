@@ -4,8 +4,8 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 
 **Developed by:** [G Wiz IT Solutions](https://gwizit.com)  
 **Plugin Type:** Local  
-**Version:** v3.0.0  
-**Compatibility:** Moodle 5.0 and above  
+**Version:** v3.0.3  
+**Compatibility:** Moodle 4.3 to 5.1+  
 **License:** GNU GPL v3 or later
 
 ---
@@ -336,7 +336,7 @@ The plugin defines two capabilities and requires site administrator access:
 ## Requirements
 
 ### Moodle Requirements
-- **Moodle version**: 5.0 or higher
+- **Moodle version**: 4.3 to 5.1+ (fully tested and compatible)
 - **PHP version**: 7.4 or higher (8.0+ recommended)
 
 ### PHP Extensions
@@ -397,6 +397,32 @@ The plugin defines two capabilities and requires site administrator access:
 ---
 
 ## Changelog
+
+### Version 3.0.3 (2025-10-19)
+**Compatibility Update**
+- ✅ Verified compatibility with Moodle 4.3 through 5.1+
+- 📝 Updated version requirements to reflect broader compatibility range
+- 🔍 All APIs and features confirmed working on Moodle 4.3+
+
+### Version 3.0.0 to 3.0.2 (2025-10-17 to 2025-10-19)
+**Major Wizard Interface & Security Update**
+
+**New Features:**
+- 🎯 Multi-step wizard interface (3 steps with visual progress)
+- 🔐 Enhanced security with site administrator-only access
+- ✨ Interactive file selection with checkboxes
+- 📊 Improved results page with clickable file links
+- ⚠️ Prominent safety warnings and backup reminders
+- 🔒 Mandatory backup confirmation checkbox
+- 🎨 Simplified filepicker interface
+- 📁 File type restrictions in picker
+
+**Improvements:**
+- Better session-based state management
+- Comprehensive XSS protection throughout
+- Specific validation error messages per file type
+- Enhanced user guidance at each step
+- Improved documentation with troubleshooting guide
 
 ### Version 2.1.0 (2025-10-16)
 **Major Feature Update**

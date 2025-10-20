@@ -1,8 +1,10 @@
 # ImagePlus - Troubleshooting Guide
 
-## Version 3.0.0
+## Version 3.0.3
 
 This guide covers common issues and solutions for the ImagePlus plugin.
+
+**Compatibility:** Moodle 4.3 to 5.1+
 
 ---
 
@@ -500,4 +502,4 @@ When reporting issues, include:
 
 ---
 
-*Last Updated: Version 3.0.0 - October 17, 2025*
+*Last Updated: Version 3.0.3 - October 19, 2025*
