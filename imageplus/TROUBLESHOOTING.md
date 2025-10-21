@@ -4,7 +4,8 @@
 
 This guide covers common issues and solutions for the ImagePlus plugin.
 
-**Compatibility:** Moodle 4.3 to 5.1+
+**Compatibility:** Moodle 4.3 to 5.1+  
+**Last Updated:** October 21, 2025
 
 ---
 
@@ -19,6 +20,30 @@ This guide covers common issues and solutions for the ImagePlus plugin.
 7. [Image Quality Issues](#image-quality-issues)
 8. [Wizard Navigation Issues](#wizard-navigation-issues)
 9. [Security Issues](#security-issues)
+
+---
+
+## Installation Issues
+
+### Plugin Type Not Detected During ZIP Upload
+
+**Symptoms:**
+- Message: "Unable to detect the plugin type"
+
+**Cause:** Moodle security feature requires manual plugin type selection.
+
+**Solution:**
+1. When prompted, select **"Local plugin (local)"** from the "Plugin type" dropdown
+2. Confirm the plugin folder name shows as **"imageplus"**
+3. Click "Install plugin from the ZIP file"
+4. This is normal behavior for security - not an error
+
+### Installation Completes But Plugin Not Visible
+
+**Solution:**
+1. Go to **Site administration → Development → Purge all caches**
+2. Click "Purge all caches"
+3. Refresh your browser
 
 ---
 
@@ -37,13 +62,7 @@ This guide covers common issues and solutions for the ImagePlus plugin.
 2. Click "Purge all caches" button
 3. Refresh the ImagePlus page
 
-**Solution 2: Update Language Strings**
-1. Go to **Site administration → Language → Language customization**
-2. Click "Edit strings" for English language
-3. Click "Continue" (you don't need to edit anything)
-4. This will rebuild the language cache
-
-**Solution 3: CLI Method (Fastest)**
+**Solution 2: CLI Method (Fastest)**
 ```bash
 php admin/cli/purge_caches.php
 ```
@@ -470,7 +489,7 @@ Look for "GD Support: enabled"
 
 When reporting issues, include:
 - Moodle version
-- Plugin version (v3.0.0)
+- Plugin version (v3.0.3)
 - PHP version
 - Exact error message
 - Steps to reproduce
@@ -480,9 +499,10 @@ When reporting issues, include:
 
 ### Contact Support
 
+- **Bug Tracker:** https://github.com/gwizit/imageplus/issues
+- **Source Code:** https://github.com/gwizit/imageplus
 - **Website:** https://gwizit.com
-- **Documentation:** See README.md
-- **Changelog:** See CHANGELOG.md
+- **Documentation:** See README.md, COMPATIBILITY.md, SECURITY_REVIEW.md
 
 ---
 
@@ -502,4 +522,7 @@ When reporting issues, include:
 
 ---
 
-*Last Updated: Version 3.0.3 - October 19, 2025*
+*Troubleshooting Guide - ImagePlus v3.0.3*  
+*Last Updated: October 21, 2025*  
+*G Wiz IT Solutions*
+

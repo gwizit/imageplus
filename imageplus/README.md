@@ -8,6 +8,10 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 **Compatibility:** Moodle 4.3 to 5.1+  
 **License:** GNU GPL v3 or later
 
+**Source Code:** [https://github.com/gwizit/imageplus](https://github.com/gwizit/imageplus)  
+**Bug Tracker:** [https://github.com/gwizit/imageplus/issues](https://github.com/gwizit/imageplus/issues)  
+**Documentation:** [README.md](https://github.com/gwizit/imageplus/blob/main/imageplus/README.md)
+
 ---
 
 ## What's New in Version 3.0.0
@@ -468,9 +472,10 @@ The plugin defines two capabilities and requires site administrator access:
 
 For issues, questions, or feature requests:
 
-- **Website**: [https://gwizit.com](https://gwizit.com)
-- **Email**: Contact through gwizit.com
-- **Moodle Plugins**: [Plugin page on Moodle.org]
+- **Bug Tracker:** [GitHub Issues](https://github.com/gwizit/imageplus/issues)
+- **Source Code:** [GitHub Repository](https://github.com/gwizit/imageplus)
+- **Website:** [https://gwizit.com](https://gwizit.com)
+- **Email:** Contact through gwizit.com
 
 ---
 
@@ -562,7 +567,13 @@ This plugin implements Moodle's Privacy API and is GDPR compliant:
 
 ## Contributing
 
-Contributions are welcome! Please contact G Wiz IT Solutions through [gwizit.com](https://gwizit.com) for more information.
+Contributions are welcome! 
+
+- **Report bugs:** [GitHub Issues](https://github.com/gwizit/imageplus/issues)
+- **Submit pull requests:** [GitHub Repository](https://github.com/gwizit/imageplus)
+- **Contact us:** Through [gwizit.com](https://gwizit.com)
+
+Please follow Moodle coding standards when contributing.
 
 ---
 
