@@ -1,0 +1,245 @@
+/**
+ * ImagePlus plugin styles
+ *
+ * All styles are namespaced with .local-imageplus prefix
+ *
+ * @package    local_imageplus
+ * @copyright  2025 G Wiz IT Solutions {@link https://gwizit.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* Stats container and cards */
+.local-imageplus-stats-container {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.local-imageplus-stat-card {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    min-width: 120px;
+    border-left: 4px solid #3498db;
+}
+
+.local-imageplus-stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.local-imageplus-stat-label {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* File list styling */
+.local-imageplus-file-list {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin: 20px 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.local-imageplus-file-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.local-imageplus-file-item:last-child {
+    border-bottom: none;
+}
+
+.local-imageplus-file-item:hover {
+    background: #f8f9fa;
+}
+
+.local-imageplus-file-item input[type="checkbox"] {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.local-imageplus-file-link {
+    color: #0056b3;
+    text-decoration: none;
+    font-family: monospace;
+    word-break: break-all;
+    font-weight: 500;
+}
+
+.local-imageplus-file-link:hover {
+    text-decoration: underline;
+    color: #003d82;
+}
+
+.local-imageplus-file-details {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 4px;
+}
+
+/* Preview warning */
+.local-imageplus-preview-warning {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    padding: 15px 20px;
+    margin: 20px 0;
+    color: #856404;
+}
+
+.local-imageplus-preview-warning strong {
+    color: #856404;
+}
+
+/* Output console */
+.local-imageplus-output-console {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 6px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    max-height: 500px;
+    overflow-y: auto;
+    margin: 20px 0;
+}
+
+.local-imageplus-output-line {
+    margin: 2px 0;
+}
+
+.local-imageplus-output-info {
+    color: #90cdf4;
+}
+
+.local-imageplus-output-success {
+    color: #68d391;
+}
+
+.local-imageplus-output-warning {
+    color: #fbd38d;
+}
+
+.local-imageplus-output-error {
+    color: #fc8181;
+}
+
+/* Section headers */
+.local-imageplus-section-header {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: bold;
+    margin-top: 20px;
+    border-radius: 6px 6px 0 0;
+}
+
+/* Select all button */
+.local-imageplus-select-all-btn {
+    margin: 10px 0;
+}
+
+/* Step indicator */
+.local-imageplus-step-indicator {
+    margin-bottom: 1.5rem;
+}
+
+.local-imageplus-step-indicator .badge-current {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.local-imageplus-step-indicator .badge-completed {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.local-imageplus-step-indicator .badge-upcoming {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* Image preview modal */
+.local-imageplus-image-preview-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.local-imageplus-image-preview-content {
+    margin: auto;
+    display: block;
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.local-imageplus-image-preview-close {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10000;
+}
+
+.local-imageplus-image-preview-close:hover,
+.local-imageplus-image-preview-close:focus {
+    color: #bbb;
+}
+
+.local-imageplus-image-preview-caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Results page specific */
+.local-imageplus-results h2 {
+    margin-bottom: 1rem;
+}
+
+.local-imageplus-results h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* File selection page specific */
+.local-imageplus-file-selection .lead {
+    margin-bottom: 1.5rem;
+}
+
+/* No files found message */
+.local-imageplus-no-files {
+    text-align: center;
+    padding: 2rem;
+}
