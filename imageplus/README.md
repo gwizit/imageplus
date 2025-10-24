@@ -4,7 +4,7 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 
 **Developed by:** [G Wiz IT Solutions](https://gwizit.com)  
 **Plugin Type:** Local  
-**Version:** v3.0.3  
+**Version:** v3.0.5  
 **Compatibility:** Moodle 4.3 to 5.1+  
 **License:** GNU GPL v3 or later
 
@@ -14,9 +14,20 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 
 ---
 
-## What's New in Version 3.0.0
+## What's New in Version 3.0.5
 
-### 🎯 Multi-Step Wizard Interface
+This update modernizes the ImagePlus plugin with Moodle best practices:
+
+### 🏗️ Modern Architecture (v3.0.5)
+- **Mustache Templates** - Clean separation of HTML from PHP logic
+- **Moodle Output API** - Proper use of renderable/templatable interfaces
+- **ES6 JavaScript Modules** - AMD/RequireJS compliant, modular code
+- **Namespaced CSS** - All styles properly scoped with `.local-imageplus-` prefix
+- **Fully Translatable** - All user-facing strings use language string system
+- **Code Quality** - 84% reduction in renderer.php, 40% reduction in index.php
+- **Bug Fixes** - Fixed duplicate statistics display issue
+
+### 🎯 Multi-Step Wizard Interface (v3.0.0)
 - **Step 1: Search Criteria** - Define what files to find
 - **Step 2: File Selection** - Review and select specific files with checkboxes
 - **Step 3: Replacement Options** - Configure replacement settings with mandatory backup confirmation
@@ -38,14 +49,6 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 - Clear error messages and user guidance
 - Final warning before executing destructive operations
 - Better visual feedback at each step
-
-### 🏗️ Modern Architecture (v3.0.3)
-- **Mustache Templates** - Clean separation of HTML from PHP logic
-- **Moodle Output API** - Proper use of renderable/templatable interfaces
-- **ES6 JavaScript Modules** - AMD/RequireJS compliant, modular code
-- **Namespaced CSS** - All styles properly scoped with `.local-imageplus-` prefix
-- **Fully Translatable** - All user-facing strings use language string system
-- **Code Quality** - 84% reduction in renderer.php, 40% reduction in index.php
 
 ---
 
@@ -409,6 +412,17 @@ The plugin defines two capabilities and requires site administrator access:
 ---
 
 ## Changelog
+
+## 📋 Version History
+
+### Version 3.0.5 (2025-10-24)
+- Complete architectural modernization
+- Implemented Mustache templating system
+- Added Output API with renderable/templatable classes
+- Created ES6 JavaScript modules with AMD compilation
+- Extracted and namespaced all CSS
+- Full internationalization compliance
+- Fixed duplicate statistics display bug
 
 ### Version 3.0.3 (2025-10-19)
 **Compatibility Update**

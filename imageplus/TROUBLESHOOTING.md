@@ -1,11 +1,11 @@
 # ImagePlus - Troubleshooting Guide
 
-## Version 3.0.3
+## Version 3.0.5
 
 This guide covers common issues and solutions for the ImagePlus plugin.
 
 **Compatibility:** Moodle 4.3 to 5.1+  
-**Last Updated:** October 21, 2025
+**Last Updated:** October 24, 2025
 
 ---
 
@@ -90,7 +90,7 @@ php admin/cli/purge_caches.php
 **On Linux/Mac:**
 ```bash
 cd /path/to/moodle/local/
-unzip moodle-local_imageplus-v3.0.0.zip
+unzip moodle-local_imageplus-v3.0.5.zip
 cd ..
 sudo chown -R www-data:www-data local/imageplus
 sudo chmod -R 755 local/imageplus
@@ -489,7 +489,7 @@ Look for "GD Support: enabled"
 
 When reporting issues, include:
 - Moodle version
-- Plugin version (v3.0.3)
+- Plugin version (v3.0.5)
 - PHP version
 - Exact error message
 - Steps to reproduce
@@ -522,7 +522,6 @@ When reporting issues, include:
 
 ---
 
-*Troubleshooting Guide - ImagePlus v3.0.3*  
-*Last Updated: October 21, 2025*  
-*G Wiz IT Solutions*
+*Troubleshooting Guide - ImagePlus v3.0.5*  
+*By G Wiz IT Solutions - https://gwizit.com*
 

@@ -1,9 +1,9 @@
 # Moodle Security Guidelines Compliance Review
 ## ImagePlus Plugin - Security Assessment
 
-**Date:** October 21, 2025  
+**Date:** October 24, 2025  
 **Plugin:** local_imageplus (ImagePlus)  
-**Version:** 3.0.3  
+**Version:** 3.0.5  
 **Reviewer:** GitHub Copilot  
 **Reference:** https://moodledev.io/general/development/policies/security
 

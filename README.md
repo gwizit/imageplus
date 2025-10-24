@@ -5,7 +5,7 @@
 **Type:** Local Plugin (local_imageplus)  
 **Developer:** G Wiz IT Solutions  
 **Website:** https://gwizit.com  
-**Version:** 3.0.3  
+**Version:** 3.0.5  
 **License:** GNU GPL v3 or later
 
 ---
