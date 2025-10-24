@@ -182,7 +182,7 @@ if ($from_form = $mform->get_data()) {
     // Verify site administrator permission for all form submissions.
     if (!has_capability('moodle/site:config', context_system::instance())) {
         throw new moodle_exception('error_requiresiteadmin', 'local_imageplus', '', null, 
-            'User attempted form submission without site:config capability');
+            get_string('error_requiresiteadmin_formsubmission', 'local_imageplus'));
     }
     
     // STEP 1: Search for files
@@ -224,7 +224,7 @@ if ($from_form = $mform->get_data()) {
         // Double-check site administrator permission for file replacement.
         if (!has_capability('moodle/site:config', context_system::instance())) {
             throw new moodle_exception('error_requiresiteadmin', 'local_imageplus', '', null,
-                'User attempted file replacement without site:config capability');
+                get_string('error_requiresiteadmin_filereplacement', 'local_imageplus'));
         }
         
         require_capability('local/imageplus:manage', context_system::instance());

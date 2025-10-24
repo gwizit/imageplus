@@ -149,6 +149,8 @@ $string['error_nopermission'] = 'You do not have permission to use this tool.';
 $string['error_nofilesselected'] = 'Please select at least one file to replace.';
 $string['error_nogd_required'] = 'GD library is required for image processing but is not available on this server. Please contact your system administrator.';
 $string['error_requiresiteadmin'] = 'Access denied. This tool is only available to site administrators. Please contact your site administrator if you need access to this functionality.';
+$string['error_requiresiteadmin_formsubmission'] = 'User attempted form submission without site:config capability';
+$string['error_requiresiteadmin_filereplacement'] = 'User attempted file replacement without site:config capability';
 
 // Warnings.
 $string['warning_nogd'] = 'GD library is not available. Cross-format image conversion is disabled. Only exact format matching (JPG→JPG, PNG→PNG) is supported.';
