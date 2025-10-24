@@ -1,0 +1,121 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_imageplus/file_selection
+
+    File selection page template for ImagePlus plugin.
+
+    Context variables required for this template:
+    * form_action - Form action URL
+    * sesskey - Session key
+    * select_files_message - Message prompting user to select files
+    * has_filesystem_files - Boolean if filesystem files exist
+    * has_database_files - Boolean if database files exist
+    * filesystem_files - Array of filesystem files
+    * database_files - Array of database files
+    * back_label - Back button label
+    * next_label - Next button label
+
+    Example context (json):
+    {
+        "form_action": "/local/imageplus/index.php",
+        "sesskey": "abc123",
+        "select_files_message": "Select files to replace",
+        "has_filesystem_files": true,
+        "filesystem_files": [
+            {
+                "filepath": "/path/to/file.jpg",
+                "checkbox_id": "fs_abc123",
+                "basename": "file.jpg",
+                "url": "http://example.com/file.jpg"
+            }
+        ]
+    }
+}}
+
+<!-- Image preview modal -->
+<div id="local-imageplus-image-preview-modal" class="local-imageplus-image-preview-modal">
+    <span class="local-imageplus-image-preview-close">&times;</span>
+    <img class="local-imageplus-image-preview-content" id="local-imageplus-image-preview-img" alt="">
+    <div class="local-imageplus-image-preview-caption" id="local-imageplus-image-preview-caption"></div>
+</div>
+
+<div class="local-imageplus-file-selection">
+    <form method="post" action="{{form_action}}" id="local-imageplus-fileselectionform">
+        <input type="hidden" name="step" value="2">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+
+        <p class="lead">{{select_files_message}}</p>
+
+        {{#has_filesystem_files}}
+        <div class="local-imageplus-section-header">{{filesystem_header}}</div>
+        <div class="local-imageplus-select-all-btn">
+            <a href="#" id="local-imageplus-select-all-fs" class="btn btn-sm btn-secondary">{{select_all_label}}</a>
+        </div>
+        <div class="local-imageplus-file-list">
+            {{#filesystem_files}}
+            <div class="local-imageplus-file-item">
+                <input type="checkbox" name="filesystem_files[]" value="{{filepath}}" class="local-imageplus-fs-checkbox" id="{{checkbox_id}}">
+                <label for="{{checkbox_id}}" style="flex: 1; margin: 0; cursor: pointer;">
+                    <a href="{{url}}" class="local-imageplus-file-link" target="_blank" title="{{view_file_label}}">{{basename}}</a>
+                    <div class="local-imageplus-file-details">{{filepath}}</div>
+                </label>
+            </div>
+            {{/filesystem_files}}
+        </div>
+        {{/has_filesystem_files}}
+
+        {{#has_database_files}}
+        <div class="local-imageplus-section-header">{{database_header}}</div>
+        <div class="local-imageplus-select-all-btn">
+            <a href="#" id="local-imageplus-select-all-db" class="btn btn-sm btn-secondary">{{select_all_label}}</a>
+        </div>
+        <div class="local-imageplus-file-list">
+            {{#database_files}}
+            <div class="local-imageplus-file-item">
+                <input type="checkbox" name="database_files[]" value="{{file_id}}" class="local-imageplus-db-checkbox" id="{{checkbox_id}}">
+                <label for="{{checkbox_id}}" style="flex: 1; margin: 0; cursor: pointer;">
+                    {{#url}}
+                    <a href="{{url}}" class="local-imageplus-file-link" target="_blank" title="{{view_file_label}}">{{filename}}</a>
+                    {{/url}}
+                    {{^url}}
+                    <span class="local-imageplus-file-link">{{filename}}</span>
+                    {{/url}}
+                    <div class="local-imageplus-file-details">{{description}}</div>
+                </label>
+            </div>
+            {{/database_files}}
+        </div>
+        {{/has_database_files}}
+
+        <div class="mt-3">
+            <button type="submit" name="backbtn" value="1" class="btn btn-secondary mr-2">{{back_label}}</button>
+            <button type="submit" name="nextbtn" value="1" class="btn btn-primary">{{next_label}}</button>
+        </div>
+    </form>
+</div>
+
+{{#js}}
+require(['local_imageplus/file_selection', 'local_imageplus/image_preview'], function(FileSelection, ImagePreview) {
+    FileSelection.init({
+        selectAllText: '{{select_all_label}}',
+        deselectAllText: '{{deselect_all_label}}',
+        warningText: '{{warning_text}}'
+    });
+    ImagePreview.init();
+});
+{{/js}}

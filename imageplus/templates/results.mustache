@@ -1,0 +1,150 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_imageplus/results
+
+    Results page template for the ImagePlus plugin.
+
+    Context variables required for this template:
+    * title - Results page title
+    * scan_only - Boolean indicating preview mode
+    * preview_warning - Warning message for preview mode (if scan_only)
+    * stats - Array of stat cards
+    * no_files_replaced - Boolean if no files were replaced
+    * no_files_message - Message when no files replaced
+    * filesystem_files - Array of successfully replaced filesystem files
+    * database_files - Array of successfully replaced database files
+    * has_output - Boolean if processing output exists
+    * output_lines - Array of processing output lines
+    * completion_message - Completion message
+    * completion_class - CSS class for completion message (alert-success, alert-info)
+    * donation_message - Donation message
+    * startover_url - URL for start over button
+
+    Example context (json):
+    {
+        "title": "Results",
+        "scan_only": true,
+        "preview_warning": "Preview mode - no changes made",
+        "stats": [
+            {"number": 5, "label": "Files found"}
+        ],
+        "filesystem_files": [
+            {
+                "url": "http://example.com/file.jpg",
+                "basename": "file.jpg",
+                "filepath": "/path/to/file.jpg",
+                "message": "Would be replaced"
+            }
+        ],
+        "startover_url": "/local/imageplus/index.php"
+    }
+}}
+
+<!-- Image preview modal -->
+<div id="local-imageplus-image-preview-modal" class="local-imageplus-image-preview-modal">
+    <span class="local-imageplus-image-preview-close">&times;</span>
+    <img class="local-imageplus-image-preview-content" id="local-imageplus-image-preview-img" alt="">
+    <div class="local-imageplus-image-preview-caption" id="local-imageplus-image-preview-caption"></div>
+</div>
+
+<div class="local-imageplus-results">
+    <h2>{{title}}</h2>
+
+    {{#scan_only}}
+    <div class="local-imageplus-preview-warning">
+        {{{preview_warning}}}
+    </div>
+    {{/scan_only}}
+
+    {{#stats}}
+    <div class="local-imageplus-stats-container">
+        {{#stats}}
+        <div class="local-imageplus-stat-card">
+            <div class="local-imageplus-stat-number">{{number}}</div>
+            <div class="local-imageplus-stat-label">{{label}}</div>
+        </div>
+        {{/stats}}
+    </div>
+    {{/stats}}
+
+    {{#no_files_replaced}}
+    <div class="alert alert-warning">
+        {{{no_files_message}}}
+    </div>
+    {{/no_files_replaced}}
+
+    {{#filesystem_files}}
+    <div class="local-imageplus-section-header">{{filesystem_header}}</div>
+    <div class="local-imageplus-file-list">
+        {{#filesystem_files}}
+        <div class="local-imageplus-file-item">
+            <a href="{{url}}" class="local-imageplus-file-link" target="_blank" title="{{view_file_label}}">{{basename}}</a>
+            <div class="local-imageplus-file-details">{{filepath}} - {{message}}</div>
+        </div>
+        {{/filesystem_files}}
+    </div>
+    {{/filesystem_files}}
+
+    {{#database_files}}
+    <div class="local-imageplus-section-header">{{database_header}}</div>
+    <div class="local-imageplus-file-list">
+        {{#database_files}}
+        <div class="local-imageplus-file-item">
+            {{#url}}
+            <a href="{{url}}" class="local-imageplus-file-link" target="_blank" title="{{view_file_label}}">{{filename}}</a>
+            {{/url}}
+            {{^url}}
+            <span class="local-imageplus-file-link">{{filename}}</span>
+            {{/url}}
+            <div class="local-imageplus-file-details">{{description}} - {{message}}</div>
+        </div>
+        {{/database_files}}
+    </div>
+    {{/database_files}}
+
+    {{#has_output}}
+    <h3>{{output_title}}</h3>
+    <div class="local-imageplus-output-console">
+        {{#output_lines}}
+        <div class="local-imageplus-output-line local-imageplus-output-{{type}}">{{message}}</div>
+        {{/output_lines}}
+    </div>
+    {{/has_output}}
+
+    {{#completion_message}}
+    <div class="alert {{completion_class}}">
+        {{{completion_message}}}
+    </div>
+    {{/completion_message}}
+
+    {{#donation_message}}
+    <div class="alert alert-warning text-center">
+        {{{donation_message}}}
+    </div>
+    {{/donation_message}}
+
+    <div class="mt-3">
+        <a href="{{startover_url}}" class="btn btn-primary">{{startover_label}}</a>
+    </div>
+</div>
+
+{{#js}}
+require(['local_imageplus/image_preview'], function(ImagePreview) {
+    ImagePreview.init();
+});
+{{/js}}

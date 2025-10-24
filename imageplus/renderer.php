@@ -35,491 +35,52 @@ defined('MOODLE_INTERNAL') || die();
 class local_imageplus_renderer extends plugin_renderer_base {
 
     /**
-     * Render results page
+     * Render results page using the output API and templates.
      *
      * @param \local_imageplus\replacer $replacer Replacer instance
      * @param array $filesystem_files File system files
      * @param array $database_files Database files
      * @param bool $scan_only Whether this is scan only
-     * @param array $form_data Form data to preserve for confirmation
      * @return string HTML output
      */
-    public function render_results($replacer, $filesystem_files, $database_files, $scan_only, $form_data = []) {
-        global $PAGE, $CFG;
-
-        $output = '';
-
-        // Add custom CSS - matching step 2 styling.
-        $output .= html_writer::start_tag('style');
-        $output .= '
-            .stats-container { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
-            .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center;
-                        min-width: 120px; border-left: 4px solid #3498db; }
-            .stat-number { font-size: 24px; font-weight: bold; color: #2c3e50; }
-            .stat-label { color: #6c757d; font-size: 14px; }
-            .file-list { background: #ffffff; border: 1px solid #dee2e6; border-radius: 6px; 
-                        margin: 20px 0; max-height: 400px; overflow-y: auto; }
-            .file-item { padding: 12px 15px; border-bottom: 1px solid #dee2e6; }
-            .file-item:last-child { border-bottom: none; }
-            .file-item:hover { background: #f8f9fa; }
-            .file-link { color: #0056b3; text-decoration: none; font-family: monospace; 
-                        word-break: break-all; }
-            .file-link:hover { text-decoration: underline; color: #003d82; }
-            .file-details { color: #666; font-size: 0.9em; margin-top: 4px; }
-            .preview-warning { background: #fff3cd; border: 2px solid #ffc107; border-radius: 6px;
-                             padding: 15px 20px; margin: 20px 0; color: #856404; }
-            .preview-warning strong { color: #856404; }
-            .output-console { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 6px;
-                            font-family: monospace; white-space: pre-wrap; max-height: 500px; overflow-y: auto;
-                            margin: 20px 0; }
-            .output-line { margin: 2px 0; }
-            .output-info { color: #90cdf4; }
-            .output-success { color: #68d391; }
-            .output-warning { color: #fbd38d; }
-            .output-error { color: #fc8181; }
-            .section-header { background: #f8f9fa; padding: 12px 15px; border-bottom: 2px solid #dee2e6;
-                            font-weight: bold; margin-top: 20px; border-radius: 6px 6px 0 0; }
-            
-            /* Image preview modal */
-            .image-preview-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0;
-                                  width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); }
-            .image-preview-content { margin: auto; display: block; max-width: 90vw; max-height: 90vh;
-                                    object-fit: contain; position: absolute; top: 50%; left: 50%;
-                                    transform: translate(-50%, -50%); }
-            .image-preview-close { position: absolute; top: 20px; right: 40px; color: #f1f1f1;
-                                  font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10000; }
-            .image-preview-close:hover, .image-preview-close:focus { color: #bbb; }
-            .image-preview-caption { margin: auto; display: block; width: 80%; max-width: 700px;
-                                    text-align: center; color: #ccc; padding: 10px 0; position: absolute;
-                                    bottom: 20px; left: 50%; transform: translateX(-50%); }
-        ';
-        $output .= html_writer::end_tag('style');
-        
-        // Add image preview modal HTML
-        $output .= '<div id="imagePreviewModal" class="image-preview-modal">';
-        $output .= '  <span class="image-preview-close">&times;</span>';
-        $output .= '  <img class="image-preview-content" id="imagePreviewImg">';
-        $output .= '  <div class="image-preview-caption" id="imagePreviewCaption"></div>';
-        $output .= '</div>';
-        
-        // Add JavaScript for image preview
-        $output .= html_writer::script("
-            (function() {
-                var modal = document.getElementById('imagePreviewModal');
-                var modalImg = document.getElementById('imagePreviewImg');
-                var captionText = document.getElementById('imagePreviewCaption');
-                var closeBtn = document.querySelector('.image-preview-close');
-                
-                // Function to close and clear modal
-                function closeModal() {
-                    modal.style.display = 'none';
-                    modalImg.src = '';  // Clear the image
-                    captionText.innerHTML = '';
-                }
-                
-                // Close modal when clicking X or outside image
-                closeBtn.onclick = closeModal;
-                modal.onclick = function(e) { 
-                    if (e.target === modal || e.target === closeBtn) {
-                        closeModal();
-                    }
-                }
-                
-                // Close on Escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && modal.style.display === 'block') {
-                        closeModal();
-                    }
-                });
-                
-                // Add click handlers to all file links
-                document.addEventListener('click', function(e) {
-                    var target = e.target;
-                    if (target.classList.contains('file-link') && target.tagName === 'A') {
-                        var href = target.getAttribute('href');
-                        var filename = target.textContent || target.innerText;
-                        
-                        // Check if it's an image file by checking both filename and href
-                        if (href && (/\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(filename) || /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(href))) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Clear old image first
-                            modalImg.src = '';
-                            captionText.innerHTML = filename;
-                            
-                            // Show modal and load new image
-                            modal.style.display = 'block';
-                            modalImg.src = href;
-                            
-                            return false;
-                        }
-                    }
-                });
-            })();
-        ");
-
-
-        $output .= $this->heading(get_string('resultstitle', 'local_imageplus'));
-
-        $stats = $replacer->get_stats();
-        $replacement_log = $replacer->get_replacement_log();
-
-        // Preview mode warning at the top.
-        if ($scan_only) {
-            $output .= html_writer::div(
-                get_string('preview_mode_warning', 'local_imageplus'),
-                'preview-warning'
-            );
-        }
-
-        // Statistics.
-        $output .= html_writer::start_div('stats-container');
-
-        // Filter replacement log for successful replacements only.
-        $successful_fs = array_filter($replacement_log, function($entry) {
-            return $entry['success'] && $entry['type'] === 'filesystem';
-        });
-        $successful_db = array_filter($replacement_log, function($entry) {
-            return $entry['success'] && $entry['type'] === 'database';
-        });
-
-        if (!$scan_only) {
-            $output .= $this->render_stat_card($stats['files_replaced'],
-                get_string('stats_replaced', 'local_imageplus'));
-
-            if ($stats['db_files_replaced'] > 0) {
-                $output .= $this->render_stat_card($stats['db_files_replaced'],
-                    get_string('stats_dbreplaced', 'local_imageplus'));
-            }
-
-            if ($stats['files_failed'] > 0) {
-                $output .= $this->render_stat_card($stats['files_failed'],
-                    get_string('stats_failed', 'local_imageplus'));
-            }
-        }
-
-        $output .= html_writer::end_div();
-
-        // No files replaced message.
-        if (!$scan_only && empty($successful_fs) && empty($successful_db)) {
-            $output .= html_writer::div(
-                get_string('nofilesreplaced', 'local_imageplus'),
-                'alert alert-warning'
-            );
-            $output .= html_writer::tag('p', get_string('nofilesreplaced_desc', 'local_imageplus'));
-        }
-
-        // File system results - only show successfully replaced files with step 2 styling.
-        if (!$scan_only && !empty($successful_fs)) {
-            $output .= html_writer::div(
-                get_string('filesreplaced_fs', 'local_imageplus'),
-                'section-header'
-            );
-            
-            $output .= html_writer::start_div('file-list');
-            foreach ($successful_fs as $entry) {
-                $file_path = $entry['filename'];
-                $safe_file_path = s($file_path);
-                $base_name = basename($file_path);
-                
-                // Create file URL - use relative path from Moodle root.
-                $relative_path = str_replace($CFG->dirroot . '/', '', $file_path);
-                $file_url = new \moodle_url('/' . $relative_path);
-                
-                $file_link = html_writer::link(
-                    $file_url,
-                    s($base_name),
-                    ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus')]
-                );
-                
-                $output .= html_writer::start_div('file-item');
-                $output .= $file_link;
-                $output .= html_writer::div(
-                    s($safe_file_path) . ' - ' . s($entry['message']),
-                    'file-details'
-                );
-                $output .= html_writer::end_div();
-            }
-            $output .= html_writer::end_div();
-        }
-
-        // Database results - only show successfully replaced files with step 2 styling.
-        if (!$scan_only && !empty($successful_db)) {
-            $output .= html_writer::div(
-                get_string('filesreplaced_db', 'local_imageplus'),
-                'section-header'
-            );
-            
-            $output .= html_writer::start_div('file-list');
-            foreach ($successful_db as $entry) {
-                $filename = $entry['filename'];
-                
-                // Build pluginfile URL for database files using Moodle's proper method.
-                $file_url = null;
-                $file_desc = s($filename);
-                
-                if (!empty($entry['contextid']) && !empty($entry['component']) && !empty($entry['filearea'])) {
-                    try {
-                        // Use Moodle's file storage to verify file exists and get proper URL.
-                        $fs = get_file_storage();
-                        $stored_file = $fs->get_file(
-                            $entry['contextid'],
-                            $entry['component'],
-                            $entry['filearea'],
-                            isset($entry['itemid']) ? $entry['itemid'] : 0,
-                            !empty($entry['filepath']) ? $entry['filepath'] : '/',
-                            $filename
-                        );
-                        
-                        if ($stored_file && !$stored_file->is_directory()) {
-                            // Use Moodle's proper URL generation method.
-                            $file_url = \moodle_url::make_pluginfile_url(
-                                $entry['contextid'],
-                                $entry['component'],
-                                $entry['filearea'],
-                                isset($entry['itemid']) ? $entry['itemid'] : null,
-                                !empty($entry['filepath']) ? $entry['filepath'] : '/',
-                                $filename,
-                                false // Don't force download.
-                            );
-                        }
-                    } catch (\Exception $e) {
-                        // If file can't be accessed, URL will remain null.
-                        $file_url = null;
-                    }
-                    
-                    if ($file_url) {
-                        $file_link = html_writer::link(
-                            $file_url,
-                            s($filename),
-                            ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus')]
-                        );
-                    } else {
-                        // No valid URL - just show filename.
-                        $file_link = html_writer::tag('span', s($filename), ['class' => 'file-link']);
-                    }
-                    
-                    // Add component/filearea details to description.
-                    $file_desc = s($entry['component']) . ' / ' . s($entry['filearea']);
-                } else {
-                    // No URL available - just show filename.
-                    $file_link = html_writer::tag('span', s($filename), ['class' => 'file-link']);
-                    if (!empty($entry['component']) && !empty($entry['filearea'])) {
-                        $file_desc = s($entry['component']) . ' / ' . s($entry['filearea']);
-                    }
-                }
-                
-                $output .= html_writer::start_div('file-item');
-                $output .= $file_link;
-                $output .= html_writer::div(
-                    $file_desc . ' - ' . s($entry['message']),
-                    'file-details'
-                );
-                $output .= html_writer::end_div();
-            }
-            $output .= html_writer::end_div();
-        }
-
-        // Processing output.
-        if (!$scanonly && !empty($replacer->get_output())) {
-            $output .= $this->heading(get_string('processingoutput', 'local_imageplus'), 3);
-            $output .= html_writer::start_div('output-console');
-            foreach ($replacer->get_output() as $msg) {
-                $class = 'output-' . $msg['type'];
-                $output .= html_writer::div(htmlspecialchars($msg['message']), 'output-line ' . $class);
-            }
-            $output .= html_writer::end_div();
-        }
-
-        // Completion message.
-        if (!$scanonly) {
-            $complete_msg = get_string('operationcomplete', 'local_imageplus') . ' ';
-            if ($stats['files_replaced'] > 0 || $stats['db_files_replaced'] > 0) {
-                $complete_msg .= get_string('operationcomplete_execute', 'local_imageplus');
-                // Add cache clearing link
-                $cache_purge_url = new moodle_url('/admin/purgecaches.php', ['confirm' => 1, 'sesskey' => sesskey()]);
-                $complete_msg .= ' ' . get_string('operationcomplete_clearcache', 'local_imageplus', $cache_purge_url->out());
-                $output .= html_writer::div($complete_msg, 'alert alert-success');
-            } else {
-                $output .= html_writer::div($complete_msg, 'alert alert-info');
-            }
-        }
-        
-        // Donation message
-        $output .= html_writer::div(
-            get_string('donation_message', 'local_imageplus'),
-            'alert alert-warning text-center'
-        );
-
-        // Back button.
-        $output .= html_writer::div(
-            $this->single_button(new moodle_url('/local/imageplus/index.php'),
-                get_string('startover', 'local_imageplus'), 'get'),
-            'mt-3'
-        );
-
-        return $output;
+    public function render_results($replacer, $filesystem_files, $database_files, $scan_only) {
+        // Use the new output renderable and template.
+        $results = new \local_imageplus\output\results($replacer, $filesystem_files, $database_files, $scan_only);
+        return $this->render_from_template('local_imageplus/results', $results->export_for_template($this));
     }
 
     /**
-     * Render a stat card
+     * Render file selection page using the output API and templates.
      *
-     * @param int $number Number to display
-     * @param string $label Label for the stat
+     * @param array $filesystem_files Filesystem files
+     * @param array $database_files Database files
+     * @param string $search_term Search term
      * @return string HTML output
      */
-    private function render_stat_card($number, $label) {
-        $output = html_writer::start_div('stat-card');
-        $output .= html_writer::div($number, 'stat-number');
-        $output .= html_writer::div($label, 'stat-label');
-        $output .= html_writer::end_div();
-        return $output;
+    public function render_file_selection($filesystem_files, $database_files, $search_term = '') {
+        $fileselection = new \local_imageplus\output\file_selection($filesystem_files, $database_files, $search_term);
+        return $this->render_from_template('local_imageplus/file_selection', $fileselection->export_for_template($this));
     }
 
     /**
-     * Render confirmation form for selected files
+     * Render step indicator using the output API and templates.
      *
-     * @param array $formdata Original form data
+     * @param int $current_step Current step number
      * @return string HTML output
      */
-    private function render_confirmation_form($formdata) {
-        $output = '';
-        
-        $output .= html_writer::start_tag('form', [
-            'method' => 'post',
-            'action' => new moodle_url('/local/imageplus/index.php'),
-            'id' => 'confirm-replacement-form'
-        ]);
-        
-        // Hidden fields to preserve form data
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'confirm']);
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'searchterm', 'value' => $formdata['searchterm'] ?? '']);
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'filetype', 'value' => $formdata['filetype'] ?? 'image']);
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'allowimageconversion', 'value' => $formdata['allowimageconversion'] ?? 1]);
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'preservepermissions', 'value' => $formdata['preservepermissions'] ?? 1]);
-        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'draftitemid', 'value' => $formdata['draftitemid'] ?? '']);
-        
-        // Confirmation buttons
-        $output .= html_writer::start_div('confirm-buttons');
-        $output .= html_writer::tag('button', get_string('confirmreplacement', 'local_imageplus'), 
-            ['type' => 'submit', 'class' => 'btn btn-primary']);
-        $output .= html_writer::tag('button', get_string('cancel'), 
-            ['type' => 'button', 'class' => 'btn btn-secondary', 'onclick' => 'window.location.href="/local/imageplus/index.php"']);
-        $output .= html_writer::end_div();
-        
-        $output .= html_writer::end_tag('form');
-        
-        // Add JavaScript for select all functionality
-        $output .= html_writer::start_tag('script');
-        $output .= '
-            function toggleAllFilesystem(checkbox) {
-                var checkboxes = document.querySelectorAll(".filesystem-checkbox");
-                checkboxes.forEach(function(cb) {
-                    cb.checked = checkbox.checked;
-                });
-            }
-            
-            function toggleAllDatabase(checkbox) {
-                var checkboxes = document.querySelectorAll(".database-checkbox");
-                checkboxes.forEach(function(cb) {
-                    cb.checked = checkbox.checked;
-                });
-            }
-            
-            document.getElementById("confirm-replacement-form").addEventListener("submit", function(e) {
-                var fsChecked = document.querySelectorAll(".filesystem-checkbox:checked").length;
-                var dbChecked = document.querySelectorAll(".database-checkbox:checked").length;
-                
-                if (fsChecked === 0 && dbChecked === 0) {
-                    e.preventDefault();
-                    alert("' . get_string('error_nofilesselected', 'local_imageplus') . '");
-                    return false;
-                }
-                
-                if (!confirm("' . get_string('confirmreplacement_confirm', 'local_imageplus') . ' " + (fsChecked + dbChecked) + " file(s)?")) {
-                    e.preventDefault();
-                    return false;
-                }
-            });
-        ';
-        $output .= html_writer::end_tag('script');
-        
-        return $output;
+    public function render_step_indicator($current_step) {
+        $stepindicator = new \local_imageplus\output\step_indicator($current_step);
+        return $this->render_from_template('local_imageplus/step_indicator', $stepindicator->export_for_template($this));
     }
 
     /**
-     * Render replacement log table
+     * Render no files found message using the output API and templates.
      *
-     * @param array $log Replacement log entries
+     * @param string $search_term Search term
      * @return string HTML output
      */
-    private function render_replacement_log($log) {
-        $output = '';
-        
-        $output .= $this->heading(get_string('replacementlog', 'local_imageplus'), 3);
-        
-        $output .= html_writer::start_div('replacement-log');
-        
-        // Header
-        $output .= html_writer::div(
-            get_string('replacementlog_header', 'local_imageplus'),
-            'replacement-log-header'
-        );
-        
-        // Log entries
-        foreach ($log as $entry) {
-            $output .= html_writer::start_div('replacement-log-item');
-            
-            // Status icon
-            $status_class = $entry['success'] ? 'log-status-success' : 'log-status-failed';
-            $status_icon = $entry['success'] ? '✓' : '✗';
-            $output .= html_writer::div($status_icon, 'log-status-icon ' . $status_class);
-            
-            // File information
-            $output .= html_writer::start_div('', ['style' => 'flex: 1;']);
-            
-            // Filename and type badge
-            $filename_html = html_writer::span(htmlspecialchars($entry['filename']), 'log-filename');
-            $type_badge = html_writer::span(
-                strtoupper($entry['type']),
-                'log-type-badge'
-            );
-            $output .= html_writer::div($filename_html . ' ' . $type_badge);
-            
-            // Message
-            $output .= html_writer::div(htmlspecialchars($entry['message']), 'log-message');
-            
-            // Additional details for database files
-            if ($entry['type'] === 'database' && isset($entry['component'])) {
-                $details = $entry['component'] . ' / ' . $entry['filearea'];
-                if (!empty($entry['filepath']) && $entry['filepath'] !== '/') {
-                    $details .= ' • ' . $entry['filepath'];
-                }
-                $output .= html_writer::div($details, 'log-details');
-            }
-            
-            $output .= html_writer::end_div(); // End file info div
-            
-            $output .= html_writer::end_div(); // End log item
-        }
-        
-        $output .= html_writer::end_div(); // End replacement-log
-        
-        // Summary
-        $success_count = count(array_filter($log, function($entry) { return $entry['success']; }));
-        $failed_count = count($log) - $success_count;
-        
-        $summary_text = get_string('replacementlog_summary', 'local_imageplus', [
-            'total' => count($log),
-            'success' => $success_count,
-            'failed' => $failed_count
-        ]);
-        
-        $alert_class = $failed_count > 0 ? 'alert alert-warning' : 'alert alert-info';
-        $output .= html_writer::div($summary_text, $alert_class);
-        
-        return $output;
+    public function render_no_files_found($search_term) {
+        $nofilesfound = new \local_imageplus\output\no_files_found($search_term);
+        return $this->render_from_template('local_imageplus/no_files_found', $nofilesfound->export_for_template($this));
     }
 }
