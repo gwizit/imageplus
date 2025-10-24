@@ -117,7 +117,8 @@ $string['preview_mode_warning'] = '<strong>PREVIEW MODE:</strong> No files have 
 $string['filesreplaced_fs'] = 'Files Replaced (File System)';
 $string['filesreplaced_db'] = 'Files Replaced (Database)';
 $string['viewfile'] = 'View file';
-$string['selectall'] = 'Select / Deselect all';
+$string['selectall'] = 'Select All';
+$string['deselectall'] = 'Deselect All';
 $string['confirmreplacement'] = 'Replace selected files';
 $string['confirmreplacement_confirm'] = 'Are you sure you want to replace';
 
