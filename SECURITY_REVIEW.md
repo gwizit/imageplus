@@ -182,7 +182,7 @@ confirm_sesskey();
 echo '<li class="' . $class . '">' . $num . '. ' . s($name) . '</li>';
 
 // Line 499: User input in notification
-get_string('nofilesfound_desc', 'local_imageplus', s($SESSION->imageplus_wizard->searchterm))
+get_string('nofilesfound_desc', 'local_imageplus', s($wizard_data->searchterm))
 
 // Line 636: File path escaping
 $safefile = s($file);
@@ -338,7 +338,7 @@ $record->sourceimageinfo = json_encode($this->sourceimage);
 $event = \local_imageplus\event\images_replaced::create([
     'context' => context_system::instance(),
     'other' => [
-        'searchterm' => $SESSION->imageplus_wizard->searchterm,
+        'searchterm' => $wizard_data->searchterm,
         'filesreplaced' => $replacer->get_stats()['files_replaced'],
         'dbfilesreplaced' => $replacer->get_stats()['db_files_replaced'],
     ],
@@ -495,8 +495,8 @@ foreach ($selectedfilesystem as $filepath) {
 - Error messages don't reveal system details
 
 ### 9. ✅ Session Fixation: **PROTECTED**
-- Uses Moodle's session management
-- No custom session handling
+- Uses Moodle's Cache API (MUC) in session mode for state management
+- No direct session manipulation
 - Session keys properly validated
 
 ### 10. ✅ Denial of Service: **MITIGATED**
