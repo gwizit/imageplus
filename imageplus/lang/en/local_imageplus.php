@@ -25,6 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+// Cache definitions.
+$string['cachedef_wizarddata'] = 'Wizard state data for the multi-step file replacement process';
+
 $string['pluginname'] = 'ImagePlus';
 $string['imageplus:manage'] = 'Manage file replacement operations';
 $string['imageplus:view'] = 'View ImagePlus tool';

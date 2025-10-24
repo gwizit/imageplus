@@ -92,7 +92,7 @@
 
 - `moodle_url` class - URL handling✅ **Multi-Step Wizard**
 
-- `plugin_renderer_base` - Custom renderers- Uses `$_SESSION` for state management (standard PHP)
+- `plugin_renderer_base` - Custom renderers- Uses Moodle Cache API (MUC) in session mode for state management
 
 - Available since: Moodle 2.0- Form validation through moodleform API
 
@@ -152,7 +152,7 @@
 
 ✅ **Multi-Step Wizard**1. **Plugin Installation**
 
-- Uses `$SESSION` for state management (standard PHP global in Moodle)   - Install via ZIP upload
+- Uses Moodle Cache API (MUC) in session mode for state management   - Install via ZIP upload
 
 - Form validation through moodleform API   - Verify settings page loads
 
@@ -260,7 +260,7 @@
 
 ---- All APIs used are stable and backward compatible
 
-- Session handling is standard PHP (not Moodle-specific)
+- State management uses Moodle Cache API (MUC) in session mode
 
 ## Testing Status
 
@@ -308,7 +308,7 @@
 
 - ✅ All APIs used are stable and backward compatible3. Standard security practices
 
-- ✅ Session handling uses standard Moodle patterns4. Follows Moodle coding standards
+- ✅ State management uses Moodle Cache API (session mode)4. Follows Moodle coding standards
 
 - ✅ Database queries are cross-DB compatible5. No hard-coded version checks
 

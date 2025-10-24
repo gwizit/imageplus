@@ -55,6 +55,9 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('pluginname', 'local_imageplus'));
 $PAGE->set_heading(get_string('heading', 'local_imageplus'));
 
+// Initialize cache for wizard data.
+$cache = cache::make('local_imageplus', 'wizarddata');
+
 // Get default settings.
 $default_search_term = get_config('local_imageplus', 'defaultsearchterm');
 $default_mode = get_config('local_imageplus', 'defaultmode');
@@ -88,28 +91,30 @@ $execute_btn = optional_param('executebtn', '', PARAM_RAW);
 // Handle "Start Over" by clearing session.
 $start_over = optional_param('startover', '', PARAM_RAW);
 if ($start_over) {
-    unset($SESSION->imageplus_wizard);
+    $cache->delete('wizard');
     redirect($PAGE->url);
 }
 
 // Initialize or retrieve session data.
-if (!isset($SESSION->imageplus_wizard)) {
-    $SESSION->imageplus_wizard = new stdClass();
-    $SESSION->imageplus_wizard->searchterm = $default_search_term;
-    $SESSION->imageplus_wizard->filetype = 'image';
-    $SESSION->imageplus_wizard->searchdatabase = $default_search_database;
-    $SESSION->imageplus_wizard->searchfilesystem = $default_search_filesystem;
-    $SESSION->imageplus_wizard->preservepermissions = $default_preserve_permissions;
-    $SESSION->imageplus_wizard->executionmode = $default_mode;
-    $SESSION->imageplus_wizard->allowimageconversion = 1;
-    $SESSION->imageplus_wizard->filesystemfiles = [];
-    $SESSION->imageplus_wizard->databasefiles = [];
-    $SESSION->imageplus_wizard->selectedfilesystem = [];
-    $SESSION->imageplus_wizard->selecteddatabase = [];
+$wizard_data = $cache->get('wizard');
+if (!$wizard_data) {
+    $wizard_data = new stdClass();
+    $wizard_data->searchterm = $default_search_term;
+    $wizard_data->filetype = 'image';
+    $wizard_data->searchdatabase = $default_search_database;
+    $wizard_data->searchfilesystem = $default_search_filesystem;
+    $wizard_data->preservepermissions = $default_preserve_permissions;
+    $wizard_data->executionmode = $default_mode;
+    $wizard_data->allowimageconversion = 1;
+    $wizard_data->filesystemfiles = [];
+    $wizard_data->databasefiles = [];
+    $wizard_data->selectedfilesystem = [];
+    $wizard_data->selecteddatabase = [];
+    $cache->set('wizard', $wizard_data);
 }
 
 // Prepare form custom data.
-$form_data = clone $SESSION->imageplus_wizard;
+$form_data = clone $wizard_data;
 $custom_data = [
     'formdata' => $form_data,
     'step' => $step,
@@ -146,13 +151,14 @@ if ($step == 2 && $next_btn) {
     }
     
     // Save validated selections.
-    $SESSION->imageplus_wizard->selectedfilesystem = $validated_filesystem;
-    $SESSION->imageplus_wizard->selecteddatabase = $selected_database;
+    $wizard_data->selectedfilesystem = $validated_filesystem;
+    $wizard_data->selecteddatabase = $selected_database;
+    $cache->set('wizard', $wizard_data);
     
     // Move to step 3.
     $step = 3;
     $custom_data['step'] = $step;
-    $custom_data['formdata'] = $SESSION->imageplus_wizard;
+    $custom_data['formdata'] = $wizard_data;
     
     $mform = new \local_imageplus\form\replacer_form(null, $custom_data);
 }
@@ -162,7 +168,7 @@ if ($step == 2 && $back_btn) {
     require_sesskey();
     $step = 1;
     $custom_data['step'] = $step;
-    $custom_data['formdata'] = $SESSION->imageplus_wizard;
+    $custom_data['formdata'] = $wizard_data;
     $mform = new \local_imageplus\form\replacer_form(null, $custom_data);
 }
 
@@ -171,7 +177,7 @@ if ($step == 3 && $back_btn) {
     require_sesskey();
     $step = 2;
     $custom_data['step'] = $step;
-    $custom_data['formdata'] = $SESSION->imageplus_wizard;
+    $custom_data['formdata'] = $wizard_data;
     $mform = new \local_imageplus\form\replacer_form(null, $custom_data);
 }
 
@@ -189,11 +195,11 @@ if ($from_form = $mform->get_data()) {
     if ($step == 1 && !$back_btn) {
         require_capability('local/imageplus:manage', context_system::instance());
         
-        // Save search criteria to session (already sanitized by moodle form).
-        $SESSION->imageplus_wizard->searchterm = $from_form->searchterm;
-        $SESSION->imageplus_wizard->filetype = $from_form->filetype;
-        $SESSION->imageplus_wizard->searchdatabase = $from_form->searchdatabase;
-        $SESSION->imageplus_wizard->searchfilesystem = $from_form->searchfilesystem;
+        // Save search criteria to cache (already sanitized by moodle form).
+        $wizard_data->searchterm = $from_form->searchterm;
+        $wizard_data->filetype = $from_form->filetype;
+        $wizard_data->searchdatabase = $from_form->searchdatabase;
+        $wizard_data->searchfilesystem = $from_form->searchfilesystem;
         
         $config = [
             'search_term' => $from_form->searchterm,
@@ -209,14 +215,15 @@ if ($from_form = $mform->get_data()) {
         $filesystem_files = $replacer->find_filesystem_files();
         $database_files = $replacer->find_database_files();
         
-        // Store found files in session.
-        $SESSION->imageplus_wizard->filesystemfiles = $filesystem_files;
-        $SESSION->imageplus_wizard->databasefiles = $database_files;
+        // Store found files in cache.
+        $wizard_data->filesystemfiles = $filesystem_files;
+        $wizard_data->databasefiles = $database_files;
+        $cache->set('wizard', $wizard_data);
         
         // Move to step 2.
         $step = 2;
         $custom_data['step'] = $step;
-        $custom_data['formdata'] = $SESSION->imageplus_wizard;
+        $custom_data['formdata'] = $wizard_data;
         $mform = new \local_imageplus\form\replacer_form(null, $custom_data);
         
     // STEP 3: Execute replacement
@@ -237,14 +244,15 @@ if ($from_form = $mform->get_data()) {
         }
         
         // Save final options (already sanitized by form).
-        $SESSION->imageplus_wizard->preservepermissions = $from_form->preservepermissions;
-        $SESSION->imageplus_wizard->executionmode = $from_form->executionmode;
+        $wizard_data->preservepermissions = $from_form->preservepermissions;
+        $wizard_data->executionmode = $from_form->executionmode;
         if (isset($from_form->allowimageconversion)) {
-            $SESSION->imageplus_wizard->allowimageconversion = $from_form->allowimageconversion;
+            $wizard_data->allowimageconversion = $from_form->allowimageconversion;
         } else {
             // If checkbox not in form (e.g., GD not available), set to 0
-            $SESSION->imageplus_wizard->allowimageconversion = 0;
+            $wizard_data->allowimageconversion = 0;
         }
+        $cache->set('wizard', $wizard_data);
         
         // Handle file upload from filepicker.
         $draft_item_id = $from_form->sourceimage;
@@ -266,7 +274,7 @@ if ($from_form = $mform->get_data()) {
         $file = reset($files);
         
         // Validate file type against allowed types.
-        $file_type = $SESSION->imageplus_wizard->filetype;
+        $file_type = $wizard_data->filetype;
         $allowed_mimetypes = [];
         
         switch ($file_type) {
@@ -300,8 +308,8 @@ if ($from_form = $mform->get_data()) {
         // NEW: Validate cross-format compatibility for images when conversion is disabled.
         if ($file_type === 'image') {
             // Check if cross-format conversion is disabled (either by user or by missing GD library).
-            $allow_image_conversion = isset($SESSION->imageplus_wizard->allowimageconversion) 
-                ? $SESSION->imageplus_wizard->allowimageconversion 
+            $allow_image_conversion = isset($wizard_data->allowimageconversion) 
+                ? $wizard_data->allowimageconversion 
                 : 1;
             $gd_available = \local_imageplus\replacer::is_gd_available();
             
@@ -318,7 +326,7 @@ if ($from_form = $mform->get_data()) {
                 $target_extensions = [];
                 
                 // Check filesystem files.
-                foreach ($SESSION->imageplus_wizard->selectedfilesystem as $filepath) {
+                foreach ($wizard_data->selectedfilesystem as $filepath) {
                     $ext = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
                     if ($ext === 'jpg') {
                         $ext = 'jpeg';
@@ -327,8 +335,8 @@ if ($from_form = $mform->get_data()) {
                 }
                 
                 // Check database files.
-                foreach ($SESSION->imageplus_wizard->databasefiles as $db_file) {
-                    if (in_array($db_file->id, $SESSION->imageplus_wizard->selecteddatabase)) {
+                foreach ($wizard_data->databasefiles as $db_file) {
+                    if (in_array($db_file->id, $wizard_data->selecteddatabase)) {
                         $ext = strtolower(pathinfo($db_file->filename, PATHINFO_EXTENSION));
                         if ($ext === 'jpg') {
                             $ext = 'jpeg';
@@ -350,8 +358,8 @@ if ($from_form = $mform->get_data()) {
                     $err_data->sourceext = strtoupper($uploaded_ext);
                     $err_data->targetexts = strtoupper(implode(', ', array_values($all_extensions)));
                     $err_data->matchingexts = strtoupper(implode(', ', array_values($target_extensions)));
-                    $err_data->targetcount = count($SESSION->imageplus_wizard->selectedfilesystem) + 
-                                           count($SESSION->imageplus_wizard->selecteddatabase);
+                    $err_data->targetcount = count($wizard_data->selectedfilesystem) + 
+                                           count($wizard_data->selecteddatabase);
                     
                     // Different error message depending on whether GD is available or not.
                     if (!$gd_available) {
@@ -373,13 +381,13 @@ if ($from_form = $mform->get_data()) {
         
         // Create replacer instance with final configuration.
         $config = [
-            'search_term' => $SESSION->imageplus_wizard->searchterm,
-            'dry_run' => ($SESSION->imageplus_wizard->executionmode === 'preview'),
-            'preserve_permissions' => (bool)$SESSION->imageplus_wizard->preservepermissions,
-            'search_database' => (bool)$SESSION->imageplus_wizard->searchdatabase,
-            'search_filesystem' => (bool)$SESSION->imageplus_wizard->searchfilesystem,
-            'file_type' => $SESSION->imageplus_wizard->filetype,
-            'allow_image_conversion' => (bool)$SESSION->imageplus_wizard->allowimageconversion,
+            'search_term' => $wizard_data->searchterm,
+            'dry_run' => ($wizard_data->executionmode === 'preview'),
+            'preserve_permissions' => (bool)$wizard_data->preservepermissions,
+            'search_database' => (bool)$wizard_data->searchdatabase,
+            'search_filesystem' => (bool)$wizard_data->searchfilesystem,
+            'file_type' => $wizard_data->filetype,
+            'allow_image_conversion' => (bool)$wizard_data->allowimageconversion,
         ];
         
         $replacer = new \local_imageplus\replacer($config);
@@ -390,11 +398,10 @@ if ($from_form = $mform->get_data()) {
                 null, \core\output\notification::NOTIFY_ERROR);
         }
         
-        // Get selected files from session.
-        $files_to_process = $SESSION->imageplus_wizard->selectedfilesystem;
-        $db_files_to_process = array_filter($SESSION->imageplus_wizard->databasefiles, function($file) {
-            global $SESSION;
-            return in_array($file->id, $SESSION->imageplus_wizard->selecteddatabase);
+        // Get selected files from cache.
+        $files_to_process = $wizard_data->selectedfilesystem;
+        $db_files_to_process = array_filter($wizard_data->databasefiles, function($file) use ($wizard_data) {
+            return in_array($file->id, $wizard_data->selecteddatabase);
         });
         $db_files_to_process = array_values($db_files_to_process);
         
@@ -409,7 +416,7 @@ if ($from_form = $mform->get_data()) {
         $event = \local_imageplus\event\images_replaced::create([
             'context' => context_system::instance(),
             'other' => [
-                'searchterm' => $SESSION->imageplus_wizard->searchterm,
+                'searchterm' => $wizard_data->searchterm,
                 'filesreplaced' => $replacer->get_stats()['files_replaced'],
                 'dbfilesreplaced' => $replacer->get_stats()['db_files_replaced'],
             ],
@@ -423,12 +430,12 @@ if ($from_form = $mform->get_data()) {
         echo $OUTPUT->header();
         $renderer = $PAGE->get_renderer('local_imageplus');
         echo $renderer->render_results($replacer, 
-            $SESSION->imageplus_wizard->filesystemfiles,
-            $SESSION->imageplus_wizard->databasefiles, 
+            $wizard_data->filesystemfiles,
+            $wizard_data->databasefiles, 
             false, []);
         
-        // Clear session (Start Over button is rendered by the renderer).
-        unset($SESSION->imageplus_wizard);
+        // Clear cache (Start Over button is rendered by the renderer).
+        $cache->delete('wizard');
         
         echo $OUTPUT->footer();
         exit;
@@ -460,7 +467,7 @@ if ($step != 2) {
 }
 
 // STEP 2: Display file selection checkboxes.
-if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
+if ($step == 2 && $wizard_data) {
     // Verify user still has permission.
     if (!has_capability('moodle/site:config', context_system::instance())) {
         echo $OUTPUT->notification(
@@ -493,12 +500,12 @@ if ($step == 2 && !empty($SESSION->imageplus_wizard)) {
     echo '</ol>';
     echo '</div>';
     
-    $filesystem_files = $SESSION->imageplus_wizard->filesystemfiles;
-    $database_files = $SESSION->imageplus_wizard->databasefiles;
+    $filesystem_files = $wizard_data->filesystemfiles;
+    $database_files = $wizard_data->databasefiles;
     
     if (empty($filesystem_files) && empty($database_files)) {
         echo $OUTPUT->notification(
-            get_string('nofilesfound_desc', 'local_imageplus', s($SESSION->imageplus_wizard->searchterm)),
+            get_string('nofilesfound_desc', 'local_imageplus', s($wizard_data->searchterm)),
             \core\output\notification::NOTIFY_WARNING
         );
         
