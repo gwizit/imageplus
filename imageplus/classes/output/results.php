@@ -117,6 +117,7 @@ class results implements renderable, templatable {
                 ];
             }
         }
+        $data->has_stats = !empty($data->stats);
 
         // No files replaced message.
         $data->no_files_replaced = !$this->scan_only && empty($successful_fs) && empty($successful_db);

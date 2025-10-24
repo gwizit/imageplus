@@ -11,7 +11,24 @@ Write-Host ""
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $PluginDir = Join-Path $ScriptDir "imageplus"
 $OutputDir = $ScriptDir
-$OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.3.zip"
+
+# Read version from version.php
+$VersionFile = Join-Path $PluginDir "version.php"
+if (-not (Test-Path $VersionFile)) {
+    Write-Host "ERROR: version.php not found at $VersionFile" -ForegroundColor Red
+    exit 1
+}
+
+$VersionContent = Get-Content $VersionFile -Raw
+if ($VersionContent -match "\`$plugin->release\s*=\s*'v?([^']+)'") {
+    $Version = $matches[1]
+    Write-Host "Detected version: v$Version" -ForegroundColor Cyan
+} else {
+    Write-Host "ERROR: Could not parse version from version.php" -ForegroundColor Red
+    exit 1
+}
+
+$OutputFile = "$OutputDir\moodle-local_imageplus-v$Version.zip"
 
 # Check if plugin directory exists
 if (-not (Test-Path $PluginDir)) {
@@ -33,7 +50,7 @@ if (Test-Path $OutputFile) {
     } catch {
         Write-Host "Could not remove existing file. Trying alternate name..." -ForegroundColor Yellow
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-        $OutputFile = "$OutputDir\moodle-local_imageplus-v3.0.3-$timestamp.zip"
+        $OutputFile = "$OutputDir\moodle-local_imageplus-v$Version-$timestamp.zip"
         Write-Host "New output file: $OutputFile" -ForegroundColor Cyan
     }
 }
