@@ -43,18 +43,18 @@ class replacer_form extends \moodleform {
      */
     public function definition() {
         $mform = $this->_form;
-        $formdata = $this->_customdata['formdata'];
+        $form_data = $this->_customdata['formdata'];
         $step = isset($this->_customdata['step']) ? $this->_customdata['step'] : 1;
 
         // Add step indicator.
         $mform->addElement('html', $this->render_step_indicator($step));
 
         if ($step == 1) {
-            $this->definition_step1($formdata);
+            $this->definition_step1($form_data);
         } else if ($step == 2) {
-            $this->definition_step2($formdata);
+            $this->definition_step2($form_data);
         } else if ($step == 3) {
-            $this->definition_step3($formdata);
+            $this->definition_step3($form_data);
         }
 
         // Session key.
@@ -69,7 +69,7 @@ class replacer_form extends \moodleform {
     /**
      * Step 1: Search criteria
      */
-    protected function definition_step1($formdata) {
+    protected function definition_step1($form_data) {
         $mform = $this->_form;
 
         // Section header.
@@ -82,10 +82,10 @@ class replacer_form extends \moodleform {
         $mform->setType('searchterm', PARAM_TEXT);
         $mform->addRule('searchterm', null, 'required', null, 'client');
         $mform->addHelpButton('searchterm', 'searchterm', 'local_imageplus');
-        $mform->setDefault('searchterm', $formdata->searchterm);
+        $mform->setDefault('searchterm', $form_data->searchterm);
 
         // File type selector.
-        $filetypeoptions = [
+        $file_type_options = [
             'image' => get_string('filetype_image', 'local_imageplus'),
             'pdf' => get_string('filetype_pdf', 'local_imageplus'),
             'zip' => get_string('filetype_zip', 'local_imageplus'),
@@ -94,21 +94,21 @@ class replacer_form extends \moodleform {
             'audio' => get_string('filetype_audio', 'local_imageplus'),
         ];
         $mform->addElement('select', 'filetype', get_string('filetype', 'local_imageplus'),
-            $filetypeoptions);
+            $file_type_options);
         $mform->addHelpButton('filetype', 'filetype', 'local_imageplus');
-        $mform->setDefault('filetype', isset($formdata->filetype) ? $formdata->filetype : 'image');
+        $mform->setDefault('filetype', isset($form_data->filetype) ? $form_data->filetype : 'image');
 
         // Search database.
         $mform->addElement('advcheckbox', 'searchdatabase',
             get_string('searchdatabase', 'local_imageplus'));
         $mform->addHelpButton('searchdatabase', 'searchdatabase', 'local_imageplus');
-        $mform->setDefault('searchdatabase', $formdata->searchdatabase);
+        $mform->setDefault('searchdatabase', $form_data->searchdatabase);
 
         // Search file system.
         $mform->addElement('advcheckbox', 'searchfilesystem',
             get_string('searchfilesystem', 'local_imageplus'));
         $mform->addHelpButton('searchfilesystem', 'searchfilesystem', 'local_imageplus');
-        $mform->setDefault('searchfilesystem', $formdata->searchfilesystem);
+        $mform->setDefault('searchfilesystem', $form_data->searchfilesystem);
 
         // Action button.
         $this->add_action_buttons(false, get_string('findbtn', 'local_imageplus'));
@@ -117,7 +117,7 @@ class replacer_form extends \moodleform {
     /**
      * Step 2: File selection
      */
-    protected function definition_step2($formdata) {
+    protected function definition_step2($form_data) {
         $mform = $this->_form;
 
         // Section header.
@@ -145,20 +145,20 @@ class replacer_form extends \moodleform {
         $mform->setType('filetype', PARAM_ALPHA);
         $mform->addElement('hidden', 'searchdatabase', $formdata->searchdatabase);
         $mform->setType('searchdatabase', PARAM_INT);
-        $mform->addElement('hidden', 'searchfilesystem', $formdata->searchfilesystem);
+        $mform->addElement('hidden', 'searchfilesystem', $form_data->searchfilesystem);
         $mform->setType('searchfilesystem', PARAM_INT);
 
         // Action buttons.
-        $buttonarray = [];
-        $buttonarray[] = $mform->createElement('submit', 'backbtn', get_string('back', 'local_imageplus'));
-        $buttonarray[] = $mform->createElement('submit', 'nextbtn', get_string('next', 'local_imageplus'));
-        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
+        $button_array = [];
+        $button_array[] = $mform->createElement('submit', 'backbtn', get_string('back', 'local_imageplus'));
+        $button_array[] = $mform->createElement('submit', 'nextbtn', get_string('next', 'local_imageplus'));
+        $mform->addGroup($button_array, 'buttonar', '', [' '], false);
     }
 
     /**
      * Step 3: Replacement options and confirmation
      */
-    protected function definition_step3($formdata) {
+    protected function definition_step3($form_data) {
         $mform = $this->_form;
 
         // Section header.
@@ -166,66 +166,66 @@ class replacer_form extends \moodleform {
         $mform->setExpanded('step3header', true);
 
         // Determine accepted file types and instruction message based on Step 1 selection.
-        $filetype = isset($formdata->filetype) ? $formdata->filetype : 'image';
-        $acceptedtypes = '*';
-        $filetypename = '';
+        $file_type = isset($form_data->filetype) ? $form_data->filetype : 'image';
+        $accepted_types = '*';
+        $file_type_name = '';
         
-        switch ($filetype) {
+        switch ($file_type) {
             case 'image':
-                $acceptedtypes = ['.jpg', '.jpeg', '.png', '.webp'];
-                $filetypename = get_string('filetype_image_name', 'local_imageplus');
+                $accepted_types = ['.jpg', '.jpeg', '.png', '.webp'];
+                $file_type_name = get_string('filetype_image_name', 'local_imageplus');
                 break;
             case 'pdf':
-                $acceptedtypes = ['.pdf'];
-                $filetypename = get_string('filetype_pdf_name', 'local_imageplus');
+                $accepted_types = ['.pdf'];
+                $file_type_name = get_string('filetype_pdf_name', 'local_imageplus');
                 break;
             case 'zip':
-                $acceptedtypes = ['.zip'];
-                $filetypename = get_string('filetype_zip_name', 'local_imageplus');
+                $accepted_types = ['.zip'];
+                $file_type_name = get_string('filetype_zip_name', 'local_imageplus');
                 break;
             case 'doc':
-                $acceptedtypes = ['.doc', '.docx', '.odt', '.txt'];
-                $filetypename = get_string('filetype_doc_name', 'local_imageplus');
+                $accepted_types = ['.doc', '.docx', '.odt', '.txt'];
+                $file_type_name = get_string('filetype_doc_name', 'local_imageplus');
                 break;
             case 'video':
-                $acceptedtypes = ['.mp4', '.avi', '.mov', '.webm'];
-                $filetypename = get_string('filetype_video_name', 'local_imageplus');
+                $accepted_types = ['.mp4', '.avi', '.mov', '.webm'];
+                $file_type_name = get_string('filetype_video_name', 'local_imageplus');
                 break;
             case 'audio':
-                $acceptedtypes = ['.mp3', '.wav', '.ogg', '.m4a'];
-                $filetypename = get_string('filetype_audio_name', 'local_imageplus');
+                $accepted_types = ['.mp3', '.wav', '.ogg', '.m4a'];
+                $file_type_name = get_string('filetype_audio_name', 'local_imageplus');
                 break;
         }
         
         // Add instruction message.
         $instruction = \html_writer::div(
-            get_string('uploadfile_instruction', 'local_imageplus', $filetypename),
+            get_string('uploadfile_instruction', 'local_imageplus', $file_type_name),
             'alert alert-info'
         );
         $mform->addElement('html', $instruction);
 
         // Convert accepted types array to string format for HTML5 accept attribute.
-        $acceptstring = '';
-        if (is_array($acceptedtypes)) {
-            $acceptstring = implode(',', $acceptedtypes);
+        $accept_string = '';
+        if (is_array($accepted_types)) {
+            $accept_string = implode(',', $accepted_types);
         } else {
-            $acceptstring = $acceptedtypes;
+            $accept_string = $accepted_types;
         }
 
         // Source file - use filepicker with better UI (similar to plugin upload page).
         $mform->addElement('filepicker', 'sourceimage', get_string('sourcefile', 'local_imageplus'),
             null, [
                 'maxbytes' => 52428800, // 50MB
-                'accepted_types' => $acceptedtypes, // Restrict to correct file types
+                'accepted_types' => $accepted_types, // Restrict to correct file types
             ]);
         $mform->addRule('sourceimage', null, 'required', null, 'client');
         $mform->addHelpButton('sourceimage', 'sourcefile', 'local_imageplus');
 
         // Check GD library availability.
-        $gdavailable = \local_imageplus\replacer::is_gd_available();
+        $gd_available = \local_imageplus\replacer::is_gd_available();
         
         // Show GD warning if not available.
-        if (!$gdavailable) {
+        if (!$gd_available) {
             $mform->addElement('static', 'gd_warning', '',
                 \html_writer::div(get_string('warning_nogd', 'local_imageplus'), 'alert alert-warning'));
         }
@@ -234,24 +234,24 @@ class replacer_form extends \moodleform {
         $mform->addElement('advcheckbox', 'preservepermissions',
             get_string('preservepermissions', 'local_imageplus'));
         $mform->addHelpButton('preservepermissions', 'preservepermissions', 'local_imageplus');
-        $mform->setDefault('preservepermissions', $formdata->preservepermissions);
+        $mform->setDefault('preservepermissions', $form_data->preservepermissions);
 
         // Execution mode.
-        $modeoptions = [
+        $mode_options = [
             'preview' => get_string('mode_preview', 'local_imageplus'),
             'execute' => get_string('mode_execute', 'local_imageplus'),
         ];
         $mform->addElement('select', 'executionmode', get_string('executionmode', 'local_imageplus'),
-            $modeoptions);
+            $mode_options);
         $mform->addHelpButton('executionmode', 'executionmode', 'local_imageplus');
-        $mform->setDefault('executionmode', $formdata->executionmode);
+        $mform->setDefault('executionmode', $form_data->executionmode);
 
         // Allow cross-format image replacement (only for images and if GD is available).
-        if ($gdavailable && isset($formdata->filetype) && $formdata->filetype === 'image') {
+        if ($gd_available && isset($form_data->filetype) && $form_data->filetype === 'image') {
             $mform->addElement('advcheckbox', 'allowimageconversion',
                 get_string('allowimageconversion', 'local_imageplus'));
             $mform->addHelpButton('allowimageconversion', 'allowimageconversion', 'local_imageplus');
-            $mform->setDefault('allowimageconversion', isset($formdata->allowimageconversion) ? $formdata->allowimageconversion : 1);
+            $mform->setDefault('allowimageconversion', isset($form_data->allowimageconversion) ? $form_data->allowimageconversion : 1);
         }
 
         // Backup confirmation checkbox.
@@ -268,41 +268,41 @@ class replacer_form extends \moodleform {
         $mform->addElement('html', $warning);
 
         // Hidden fields to preserve previous steps data.
-        $mform->addElement('hidden', 'searchterm', $formdata->searchterm);
+        $mform->addElement('hidden', 'searchterm', $form_data->searchterm);
         $mform->setType('searchterm', PARAM_TEXT);
-        $mform->addElement('hidden', 'filetype', $formdata->filetype);
+        $mform->addElement('hidden', 'filetype', $form_data->filetype);
         $mform->setType('filetype', PARAM_ALPHA);
-        $mform->addElement('hidden', 'searchdatabase', $formdata->searchdatabase);
+        $mform->addElement('hidden', 'searchdatabase', $form_data->searchdatabase);
         $mform->setType('searchdatabase', PARAM_INT);
-        $mform->addElement('hidden', 'searchfilesystem', $formdata->searchfilesystem);
+        $mform->addElement('hidden', 'searchfilesystem', $form_data->searchfilesystem);
         $mform->setType('searchfilesystem', PARAM_INT);
 
         // Hidden field for selected files (will be populated from session).
-        if (isset($formdata->selectedfiles)) {
-            $mform->addElement('hidden', 'selectedfiles', $formdata->selectedfiles);
+        if (isset($form_data->selectedfiles)) {
+            $mform->addElement('hidden', 'selectedfiles', $form_data->selectedfiles);
             $mform->setType('selectedfiles', PARAM_RAW);
         }
 
         // Action buttons.
-        $buttonarray = [];
-        $buttonarray[] = $mform->createElement('submit', 'backbtn', get_string('back', 'local_imageplus'));
-        $buttonarray[] = $mform->createElement('submit', 'executebtn', get_string('execute_replacement', 'local_imageplus'));
-        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
+        $button_array = [];
+        $button_array[] = $mform->createElement('submit', 'backbtn', get_string('back', 'local_imageplus'));
+        $button_array[] = $mform->createElement('submit', 'executebtn', get_string('execute_replacement', 'local_imageplus'));
+        $mform->addGroup($button_array, 'buttonar', '', [' '], false);
         $mform->setType('backbtn', PARAM_RAW);
         
         // Add start over link.
-        $startoverlink = \html_writer::link(
+        $start_over_link = \html_writer::link(
             new \moodle_url('/local/imageplus/index.php', ['startover' => 1]),
             get_string('startover', 'local_imageplus'),
             ['class' => 'btn btn-secondary ml-2']
         );
-        $mform->addElement('html', \html_writer::div($startoverlink, 'mt-2'));
+        $mform->addElement('html', \html_writer::div($start_over_link, 'mt-2'));
     }
 
     /**
      * Render step indicator
      */
-    protected function render_step_indicator($currentstep) {
+    protected function render_step_indicator($current_step) {
         $steps = [
             1 => get_string('step1_name', 'local_imageplus'),
             2 => get_string('step2_name', 'local_imageplus'),
@@ -313,9 +313,9 @@ class replacer_form extends \moodleform {
         $html .= '<ol class="list-inline">';
         foreach ($steps as $num => $name) {
             $class = 'list-inline-item badge ';
-            if ($num == $currentstep) {
+            if ($num == $current_step) {
                 $class .= 'badge-primary';
-            } else if ($num < $currentstep) {
+            } else if ($num < $current_step) {
                 $class .= 'badge-success';
             } else {
                 $class .= 'badge-secondary';

@@ -38,13 +38,13 @@ class local_imageplus_renderer extends plugin_renderer_base {
      * Render results page
      *
      * @param \local_imageplus\replacer $replacer Replacer instance
-     * @param array $filesystemfiles File system files
-     * @param array $databasefiles Database files
-     * @param bool $scanonly Whether this is scan only
-     * @param array $formdata Form data to preserve for confirmation
+     * @param array $filesystem_files File system files
+     * @param array $database_files Database files
+     * @param bool $scan_only Whether this is scan only
+     * @param array $form_data Form data to preserve for confirmation
      * @return string HTML output
      */
-    public function render_results($replacer, $filesystemfiles, $databasefiles, $scanonly, $formdata = []) {
+    public function render_results($replacer, $filesystem_files, $database_files, $scan_only, $form_data = []) {
         global $PAGE, $CFG;
 
         $output = '';
@@ -163,10 +163,10 @@ class local_imageplus_renderer extends plugin_renderer_base {
         $output .= $this->heading(get_string('resultstitle', 'local_imageplus'));
 
         $stats = $replacer->get_stats();
-        $replacementlog = $replacer->get_replacement_log();
+        $replacement_log = $replacer->get_replacement_log();
 
         // Preview mode warning at the top.
-        if ($scanonly) {
+        if ($scan_only) {
             $output .= html_writer::div(
                 get_string('preview_mode_warning', 'local_imageplus'),
                 'preview-warning'
@@ -177,14 +177,14 @@ class local_imageplus_renderer extends plugin_renderer_base {
         $output .= html_writer::start_div('stats-container');
 
         // Filter replacement log for successful replacements only.
-        $successfulFs = array_filter($replacementlog, function($entry) {
+        $successful_fs = array_filter($replacement_log, function($entry) {
             return $entry['success'] && $entry['type'] === 'filesystem';
         });
-        $successfulDb = array_filter($replacementlog, function($entry) {
+        $successful_db = array_filter($replacement_log, function($entry) {
             return $entry['success'] && $entry['type'] === 'database';
         });
 
-        if (!$scanonly) {
+        if (!$scan_only) {
             $output .= $this->render_stat_card($stats['files_replaced'],
                 get_string('stats_replaced', 'local_imageplus'));
 
@@ -202,7 +202,7 @@ class local_imageplus_renderer extends plugin_renderer_base {
         $output .= html_writer::end_div();
 
         // No files replaced message.
-        if (!$scanonly && empty($successfulFs) && empty($successfulDb)) {
+        if (!$scan_only && empty($successful_fs) && empty($successful_db)) {
             $output .= html_writer::div(
                 get_string('nofilesreplaced', 'local_imageplus'),
                 'alert alert-warning'
@@ -211,32 +211,32 @@ class local_imageplus_renderer extends plugin_renderer_base {
         }
 
         // File system results - only show successfully replaced files with step 2 styling.
-        if (!$scanonly && !empty($successfulFs)) {
+        if (!$scan_only && !empty($successful_fs)) {
             $output .= html_writer::div(
                 get_string('filesreplaced_fs', 'local_imageplus'),
                 'section-header'
             );
             
             $output .= html_writer::start_div('file-list');
-            foreach ($successfulFs as $entry) {
-                $filepath = $entry['filename'];
-                $safefilepath = s($filepath);
-                $basename = basename($filepath);
+            foreach ($successful_fs as $entry) {
+                $file_path = $entry['filename'];
+                $safe_file_path = s($file_path);
+                $base_name = basename($file_path);
                 
                 // Create file URL - use relative path from Moodle root.
-                $relativepath = str_replace($CFG->dirroot . '/', '', $filepath);
-                $fileurl = new \moodle_url('/' . $relativepath);
+                $relative_path = str_replace($CFG->dirroot . '/', '', $file_path);
+                $file_url = new \moodle_url('/' . $relative_path);
                 
-                $filelink = html_writer::link(
-                    $fileurl,
-                    s($basename),
+                $file_link = html_writer::link(
+                    $file_url,
+                    s($base_name),
                     ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus')]
                 );
                 
                 $output .= html_writer::start_div('file-item');
-                $output .= $filelink;
+                $output .= $file_link;
                 $output .= html_writer::div(
-                    s($safefilepath) . ' - ' . s($entry['message']),
+                    s($safe_file_path) . ' - ' . s($entry['message']),
                     'file-details'
                 );
                 $output .= html_writer::end_div();
@@ -245,25 +245,25 @@ class local_imageplus_renderer extends plugin_renderer_base {
         }
 
         // Database results - only show successfully replaced files with step 2 styling.
-        if (!$scanonly && !empty($successfulDb)) {
+        if (!$scan_only && !empty($successful_db)) {
             $output .= html_writer::div(
                 get_string('filesreplaced_db', 'local_imageplus'),
                 'section-header'
             );
             
             $output .= html_writer::start_div('file-list');
-            foreach ($successfulDb as $entry) {
+            foreach ($successful_db as $entry) {
                 $filename = $entry['filename'];
                 
                 // Build pluginfile URL for database files using Moodle's proper method.
-                $fileurl = null;
-                $filedesc = s($filename);
+                $file_url = null;
+                $file_desc = s($filename);
                 
                 if (!empty($entry['contextid']) && !empty($entry['component']) && !empty($entry['filearea'])) {
                     try {
                         // Use Moodle's file storage to verify file exists and get proper URL.
                         $fs = get_file_storage();
-                        $storedfile = $fs->get_file(
+                        $stored_file = $fs->get_file(
                             $entry['contextid'],
                             $entry['component'],
                             $entry['filearea'],
@@ -272,9 +272,9 @@ class local_imageplus_renderer extends plugin_renderer_base {
                             $filename
                         );
                         
-                        if ($storedfile && !$storedfile->is_directory()) {
+                        if ($stored_file && !$stored_file->is_directory()) {
                             // Use Moodle's proper URL generation method.
-                            $fileurl = \moodle_url::make_pluginfile_url(
+                            $file_url = \moodle_url::make_pluginfile_url(
                                 $entry['contextid'],
                                 $entry['component'],
                                 $entry['filearea'],
@@ -286,34 +286,34 @@ class local_imageplus_renderer extends plugin_renderer_base {
                         }
                     } catch (\Exception $e) {
                         // If file can't be accessed, URL will remain null.
-                        $fileurl = null;
+                        $file_url = null;
                     }
                     
-                    if ($fileurl) {
-                        $filelink = html_writer::link(
-                            $fileurl,
+                    if ($file_url) {
+                        $file_link = html_writer::link(
+                            $file_url,
                             s($filename),
                             ['class' => 'file-link', 'target' => '_blank', 'title' => get_string('viewfile', 'local_imageplus')]
                         );
                     } else {
                         // No valid URL - just show filename.
-                        $filelink = html_writer::tag('span', s($filename), ['class' => 'file-link']);
+                        $file_link = html_writer::tag('span', s($filename), ['class' => 'file-link']);
                     }
                     
                     // Add component/filearea details to description.
-                    $filedesc = s($entry['component']) . ' / ' . s($entry['filearea']);
+                    $file_desc = s($entry['component']) . ' / ' . s($entry['filearea']);
                 } else {
                     // No URL available - just show filename.
-                    $filelink = html_writer::tag('span', s($filename), ['class' => 'file-link']);
+                    $file_link = html_writer::tag('span', s($filename), ['class' => 'file-link']);
                     if (!empty($entry['component']) && !empty($entry['filearea'])) {
-                        $filedesc = s($entry['component']) . ' / ' . s($entry['filearea']);
+                        $file_desc = s($entry['component']) . ' / ' . s($entry['filearea']);
                     }
                 }
                 
                 $output .= html_writer::start_div('file-item');
-                $output .= $filelink;
+                $output .= $file_link;
                 $output .= html_writer::div(
-                    $filedesc . ' - ' . s($entry['message']),
+                    $file_desc . ' - ' . s($entry['message']),
                     'file-details'
                 );
                 $output .= html_writer::end_div();
@@ -334,15 +334,15 @@ class local_imageplus_renderer extends plugin_renderer_base {
 
         // Completion message.
         if (!$scanonly) {
-            $completemsg = get_string('operationcomplete', 'local_imageplus') . ' ';
+            $complete_msg = get_string('operationcomplete', 'local_imageplus') . ' ';
             if ($stats['files_replaced'] > 0 || $stats['db_files_replaced'] > 0) {
-                $completemsg .= get_string('operationcomplete_execute', 'local_imageplus');
+                $complete_msg .= get_string('operationcomplete_execute', 'local_imageplus');
                 // Add cache clearing link
-                $cachepurgeurl = new moodle_url('/admin/purgecaches.php', ['confirm' => 1, 'sesskey' => sesskey()]);
-                $completemsg .= ' ' . get_string('operationcomplete_clearcache', 'local_imageplus', $cachepurgeurl->out());
-                $output .= html_writer::div($completemsg, 'alert alert-success');
+                $cache_purge_url = new moodle_url('/admin/purgecaches.php', ['confirm' => 1, 'sesskey' => sesskey()]);
+                $complete_msg .= ' ' . get_string('operationcomplete_clearcache', 'local_imageplus', $cache_purge_url->out());
+                $output .= html_writer::div($complete_msg, 'alert alert-success');
             } else {
-                $output .= html_writer::div($completemsg, 'alert alert-info');
+                $output .= html_writer::div($complete_msg, 'alert alert-info');
             }
         }
         
@@ -473,20 +473,20 @@ class local_imageplus_renderer extends plugin_renderer_base {
             $output .= html_writer::start_div('replacement-log-item');
             
             // Status icon
-            $statusclass = $entry['success'] ? 'log-status-success' : 'log-status-failed';
-            $statusicon = $entry['success'] ? '✓' : '✗';
-            $output .= html_writer::div($statusicon, 'log-status-icon ' . $statusclass);
+            $status_class = $entry['success'] ? 'log-status-success' : 'log-status-failed';
+            $status_icon = $entry['success'] ? '✓' : '✗';
+            $output .= html_writer::div($status_icon, 'log-status-icon ' . $status_class);
             
             // File information
             $output .= html_writer::start_div('', ['style' => 'flex: 1;']);
             
             // Filename and type badge
-            $filenamehtml = html_writer::span(htmlspecialchars($entry['filename']), 'log-filename');
-            $typebadge = html_writer::span(
+            $filename_html = html_writer::span(htmlspecialchars($entry['filename']), 'log-filename');
+            $type_badge = html_writer::span(
                 strtoupper($entry['type']),
                 'log-type-badge'
             );
-            $output .= html_writer::div($filenamehtml . ' ' . $typebadge);
+            $output .= html_writer::div($filename_html . ' ' . $type_badge);
             
             // Message
             $output .= html_writer::div(htmlspecialchars($entry['message']), 'log-message');
@@ -508,17 +508,17 @@ class local_imageplus_renderer extends plugin_renderer_base {
         $output .= html_writer::end_div(); // End replacement-log
         
         // Summary
-        $successcount = count(array_filter($log, function($entry) { return $entry['success']; }));
-        $failedcount = count($log) - $successcount;
+        $success_count = count(array_filter($log, function($entry) { return $entry['success']; }));
+        $failed_count = count($log) - $success_count;
         
-        $summarytext = get_string('replacementlog_summary', 'local_imageplus', [
+        $summary_text = get_string('replacementlog_summary', 'local_imageplus', [
             'total' => count($log),
-            'success' => $successcount,
-            'failed' => $failedcount
+            'success' => $success_count,
+            'failed' => $failed_count
         ]);
         
-        $alertclass = $failedcount > 0 ? 'alert alert-warning' : 'alert alert-info';
-        $output .= html_writer::div($summarytext, $alertclass);
+        $alert_class = $failed_count > 0 ? 'alert alert-warning' : 'alert alert-info';
+        $output .= html_writer::div($summary_text, $alert_class);
         
         return $output;
     }

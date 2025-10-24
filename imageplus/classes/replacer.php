@@ -39,55 +39,55 @@ class replacer {
     private $config;
 
     /** @var string Moodle root directory */
-    private $moodleroot;
+    private $moodle_root;
 
     /** @var string Source file path */
-    private $sourcefilepath;
+    private $source_file_path;
 
     /** @var array Source image information */
-    private $sourceimage;
+    private $source_image;
 
     /** @var resource GD image resource for source image */
-    private $sourceimageresource;
+    private $source_image_resource;
 
     /** @var array Statistics */
     private $stats;
 
     /** @var array Replacement log entries */
-    private $replacementlog;
+    private $replacement_log;
 
     /** @var \file_storage Moodle file storage */
-    private $filestorage;
+    private $file_storage;
 
     /** @var array Output messages */
     private $output;
 
     /** @var array Supported image formats */
-    private $supportedformats = ['.jpg', '.jpeg', '.png', '.webp'];
+    private $supported_formats = ['.jpg', '.jpeg', '.png', '.webp'];
 
     /** @var array Supported PDF formats */
-    private $supportedpdfformats = ['.pdf'];
+    private $supported_pdf_formats = ['.pdf'];
 
     /** @var array Supported ZIP formats */
-    private $supportedzipformats = ['.zip', '.tar', '.gz', '.rar', '.7z'];
+    private $supported_zip_formats = ['.zip', '.tar', '.gz', '.rar', '.7z'];
 
     /** @var array Supported document formats */
-    private $supporteddocformats = ['.doc', '.docx', '.odt', '.txt', '.rtf'];
+    private $supported_doc_formats = ['.doc', '.docx', '.odt', '.txt', '.rtf'];
 
     /** @var array Supported video formats */
-    private $supportedvideoformats = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'];
+    private $supported_video_formats = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'];
 
     /** @var array Supported audio formats */
-    private $supportedaudioformats = ['.mp3', '.wav', '.ogg', '.m4a', '.flac'];
+    private $supported_audio_formats = ['.mp3', '.wav', '.ogg', '.m4a', '.flac'];
 
     /** @var array All supported formats combined */
-    private $allsupportedformats = [];
+    private $all_supported_formats = [];
 
     /** @var string Selected file type filter */
-    private $filetype = 'image';
+    private $file_type = 'image';
 
     /** @var array Directories to search */
-    private $searchdirectories = [
+    private $search_directories = [
         'theme',
         'pix',
         'mod',
@@ -126,8 +126,8 @@ class replacer {
     public function __construct($config = []) {
         global $CFG;
 
-        $this->moodleroot = $CFG->dirroot;
-        $this->filestorage = get_file_storage();
+        $this->moodle_root = $CFG->dirroot;
+        $this->file_storage = get_file_storage();
 
         $this->config = array_merge([
             'search_term' => '',
@@ -146,14 +146,14 @@ class replacer {
         }
 
         // Set file type and combine all supported formats
-        $this->filetype = $this->config['file_type'];
-        $this->allsupportedformats = array_merge(
-            $this->supportedformats,
-            $this->supportedpdfformats,
-            $this->supportedzipformats,
-            $this->supporteddocformats,
-            $this->supportedvideoformats,
-            $this->supportedaudioformats
+        $this->file_type = $this->config['file_type'];
+        $this->all_supported_formats = array_merge(
+            $this->supported_formats,
+            $this->supported_pdf_formats,
+            $this->supported_zip_formats,
+            $this->supported_doc_formats,
+            $this->supported_video_formats,
+            $this->supported_audio_formats
         );
 
         $this->stats = [
@@ -166,7 +166,7 @@ class replacer {
         ];
 
         $this->output = [];
-        $this->replacementlog = [];
+        $this->replacement_log = [];
     }
 
     /**
@@ -175,34 +175,34 @@ class replacer {
      * @return array Array of file extensions to search for
      */
     private function get_active_formats() {
-        switch ($this->filetype) {
+        switch ($this->file_type) {
             case 'image':
-                return $this->supportedformats;
+                return $this->supported_formats;
             case 'pdf':
-                return $this->supportedpdfformats;
+                return $this->supported_pdf_formats;
             case 'zip':
-                return $this->supportedzipformats;
+                return $this->supported_zip_formats;
             case 'doc':
-                return $this->supporteddocformats;
+                return $this->supported_doc_formats;
             case 'video':
-                return $this->supportedvideoformats;
+                return $this->supported_video_formats;
             case 'audio':
-                return $this->supportedaudioformats;
+                return $this->supported_audio_formats;
             default:
                 // Default to images if invalid type provided
-                return $this->supportedformats;
+                return $this->supported_formats;
         }
     }
 
     /**
      * Check if file is an image based on extension
      *
-     * @param string $filepath File path
+     * @param string $file_path File path
      * @return bool True if image
      */
-    private function is_image_file($filepath) {
-        $extension = strtolower('.' . pathinfo($filepath, PATHINFO_EXTENSION));
-        return in_array($extension, $this->supportedformats);
+    private function is_image_file($file_path) {
+        $extension = strtolower('.' . pathinfo($file_path, PATHINFO_EXTENSION));
+        return in_array($extension, $this->supported_formats);
     }
 
     /**
@@ -213,59 +213,59 @@ class replacer {
      * @param string $searchterm Search term with optional wildcards
      * @return bool True if filename matches
      */
-    private function matches_search_term($filename, $searchterm) {
+    private function matches_search_term($filename, $search_term) {
         $filename = strtolower($filename);
-        $searchterm = strtolower($searchterm);
+        $search_term = strtolower($search_term);
 
         // If search term contains wildcards, use pattern matching
-        if (strpos($searchterm, '*') !== false || strpos($searchterm, '?') !== false) {
+        if (strpos($search_term, '*') !== false || strpos($search_term, '?') !== false) {
             // Check if pattern already covers full filename (starts/ends with wildcards)
-            $hasLeadingWildcard = (substr($searchterm, 0, 1) === '*');
-            $hasTrailingWildcard = (substr($searchterm, -1) === '*');
+            $has_leading_wildcard = (substr($search_term, 0, 1) === '*');
+            $has_trailing_wildcard = (substr($search_term, -1) === '*');
             
             // If no leading wildcard, add one to allow matching anywhere in filename
-            if (!$hasLeadingWildcard) {
-                $searchterm = '*' . $searchterm;
+            if (!$has_leading_wildcard) {
+                $search_term = '*' . $search_term;
             }
             
             // If no trailing wildcard, add one to allow matching anywhere in filename
-            if (!$hasTrailingWildcard) {
-                $searchterm = $searchterm . '*';
+            if (!$has_trailing_wildcard) {
+                $search_term = $search_term . '*';
             }
             
             // Use fnmatch with FNM_CASEFOLD for case-insensitive matching if available
             if (defined('FNM_CASEFOLD')) {
-                return fnmatch($searchterm, $filename, FNM_CASEFOLD);
+                return fnmatch($search_term, $filename, FNM_CASEFOLD);
             } else {
                 // Fallback: both already lowercase, use fnmatch
-                return fnmatch($searchterm, $filename);
+                return fnmatch($search_term, $filename);
             }
         }
 
         // Otherwise use simple substring match
-        return strpos($filename, $searchterm) !== false;
+        return strpos($filename, $search_term) !== false;
     }
 
     /**
      * Validate that source and target file extensions match
      * For images, allows cross-format replacement if configured
      *
-     * @param string $sourcepath Source file path
-     * @param string $targetpath Target file path
+     * @param string $source_path Source file path
+     * @param string $target_path Target file path
      * @return bool True if replacement is allowed
      */
-    private function validate_extension_match($sourcepath, $targetpath) {
-        $sourceext = strtolower('.' . pathinfo($sourcepath, PATHINFO_EXTENSION));
-        $targetext = strtolower('.' . pathinfo($targetpath, PATHINFO_EXTENSION));
+    private function validate_extension_match($source_path, $target_path) {
+        $source_ext = strtolower('.' . pathinfo($source_path, PATHINFO_EXTENSION));
+        $target_ext = strtolower('.' . pathinfo($target_path, PATHINFO_EXTENSION));
 
         // If extensions match, always allow
-        if ($sourceext === $targetext) {
+        if ($source_ext === $target_ext) {
             return true;
         }
 
         // For images, check if cross-format conversion is allowed
-        if ($this->is_image_file($sourcepath) && 
-            $this->is_image_file($targetpath) && 
+        if ($this->is_image_file($source_path) && 
+            $this->is_image_file($target_path) && 
             $this->config['allow_image_conversion']) {
             return true;
         }
@@ -273,7 +273,7 @@ class replacer {
         // Extensions don't match and not allowed for this type
         $this->add_output(
             get_string('error_extensionmismatch', 'local_imageplus', 
-                ['source' => ltrim($sourceext, '.'), 'target' => ltrim($targetext, '.')]),
+                ['source' => ltrim($source_ext, '.'), 'target' => ltrim($target_ext, '.')]),
             'error'
         );
         return false;
@@ -282,52 +282,52 @@ class replacer {
     /**
      * Load and validate the source file
      *
-     * @param string $filepath Path to source file
+     * @param string $file_path Path to source file
      * @return bool Success status
      */
-    public function load_source_file($filepath) {
-        if (!file_exists($filepath)) {
-            $this->add_output("Error: Source file not found: $filepath", 'error');
+    public function load_source_file($file_path) {
+        if (!file_exists($file_path)) {
+            $this->add_output("Error: Source file not found: $file_path", 'error');
             return false;
         }
 
         // Store the source file path for later validation
-        $this->sourcefilepath = $filepath;
+        $this->source_file_path = $file_path;
 
         // Check if this is an image file that needs special handling
-        if ($this->is_image_file($filepath)) {
+        if ($this->is_image_file($file_path)) {
             // Check if GD library is available for image processing
             if (!self::is_gd_available()) {
                 $this->add_output("Warning: GD library not available. Image processing limited to same-format replacement only.", 'warning');
                 // Store basic info without GD processing
-                $this->sourceimage = [
-                    'filepath' => $filepath,
-                    'filename' => basename($filepath),
-                    'filesize' => filesize($filepath),
+                $this->source_image = [
+                    'filepath' => $file_path,
+                    'filename' => basename($file_path),
+                    'filesize' => filesize($file_path),
                     'is_image' => false, // Treat as regular file without GD
                 ];
-                $this->add_output("Loaded source file: " . basename($filepath), 'success');
+                $this->add_output("Loaded source file: " . basename($file_path), 'success');
                 return true;
             }
 
-            $imageinfo = getimagesize($filepath);
-            if ($imageinfo === false) {
-                $this->add_output("Error: Invalid image file: $filepath", 'error');
+            $image_info = getimagesize($file_path);
+            if ($image_info === false) {
+                $this->add_output("Error: Invalid image file: $file_path", 'error');
                 return false;
             }
 
             // Load the image resource based on type.
-            switch ($imageinfo[2]) {
+            switch ($image_info[2]) {
                 case IMAGETYPE_JPEG:
-                    $this->sourceimageresource = imagecreatefromjpeg($filepath);
+                    $this->source_image_resource = imagecreatefromjpeg($file_path);
                     break;
                 case IMAGETYPE_PNG:
-                    $this->sourceimageresource = imagecreatefrompng($filepath);
-                    imagesavealpha($this->sourceimageresource, true);
+                    $this->source_image_resource = imagecreatefrompng($file_path);
+                    imagesavealpha($this->source_image_resource, true);
                     break;
                 case IMAGETYPE_WEBP:
                     if (function_exists('imagecreatefromwebp')) {
-                        $this->sourceimageresource = imagecreatefromwebp($filepath);
+                        $this->source_image_resource = imagecreatefromwebp($file_path);
                     } else {
                         $this->add_output("Error: WebP support not available in this PHP installation", 'error');
                         return false;
@@ -338,33 +338,33 @@ class replacer {
                     return false;
             }
 
-            if (!$this->sourceimageresource) {
+            if (!$this->source_image_resource) {
                 $this->add_output("Error: Failed to load source image", 'error');
                 return false;
             }
 
-            $this->sourceimage = [
-                'width' => $imageinfo[0],
-                'height' => $imageinfo[1],
-                'type' => $imageinfo[2],
-                'mime' => $imageinfo['mime'],
+            $this->source_image = [
+                'width' => $image_info[0],
+                'height' => $image_info[1],
+                'type' => $image_info[2],
+                'mime' => $image_info['mime'],
                 'is_image' => true,
             ];
 
-            $this->add_output("Loaded source image: " . basename($filepath), 'success');
-            $this->add_output("Format: " . $this->get_format_name($imageinfo[2]) .
-                ", Size: " . $imageinfo[0] . "x" . $imageinfo[1], 'info');
+            $this->add_output("Loaded source image: " . basename($file_path), 'success');
+            $this->add_output("Format: " . $this->get_format_name($image_info[2]) .
+                ", Size: " . $image_info[0] . "x" . $image_info[1], 'info');
         } else {
             // For non-image files, just store basic info
-            $this->sourceimage = [
-                'filepath' => $filepath,
-                'filename' => basename($filepath),
-                'filesize' => filesize($filepath),
+            $this->source_image = [
+                'filepath' => $file_path,
+                'filename' => basename($file_path),
+                'filesize' => filesize($file_path),
                 'is_image' => false,
             ];
 
-            $this->add_output("Loaded source file: " . basename($filepath), 'success');
-            $this->add_output("File size: " . $this->format_file_size(filesize($filepath)), 'info');
+            $this->add_output("Loaded source file: " . basename($file_path), 'success');
+            $this->add_output("File size: " . $this->format_file_size(filesize($file_path)), 'info');
         }
 
         return true;
@@ -382,26 +382,26 @@ class replacer {
 
         $this->add_output("Scanning file system directories...", 'info');
 
-        $matchingfiles = [];
-        $searchtermLower = strtolower($this->config['search_term']);
+        $matching_files = [];
+        $search_term_lower = strtolower($this->config['search_term']);
 
-        foreach ($this->searchdirectories as $directory) {
-            $fullpath = $this->moodleroot . '/' . $directory;
-            if (is_dir($fullpath)) {
+        foreach ($this->search_directories as $directory) {
+            $full_path = $this->moodle_root . '/' . $directory;
+            if (is_dir($full_path)) {
                 $this->add_output("Scanning: $directory/", 'info');
-                $files = $this->scan_directory_recursive($fullpath, $searchtermLower);
-                $matchingfiles = array_merge($matchingfiles, $files);
+                $files = $this->scan_directory_recursive($full_path, $search_term_lower);
+                $matching_files = array_merge($matching_files, $files);
             }
         }
 
         // Scan root directory.
         $this->add_output("Scanning: / (root)", 'info');
-        $rootfiles = $this->scan_directory($this->moodleroot, $searchtermLower, false);
-        $matchingfiles = array_merge($matchingfiles, $rootfiles);
+        $root_files = $this->scan_directory($this->moodle_root, $search_term_lower, false);
+        $matching_files = array_merge($matching_files, $root_files);
 
-        $this->add_output("Found " . count($matchingfiles) . " matching files", 'success');
+        $this->add_output("Found " . count($matching_files) . " matching files", 'success');
 
-        return $matchingfiles;
+        return $matching_files;
     }
 
     /**
@@ -420,68 +420,68 @@ class replacer {
 
         try {
             // Build MIME type filter based on file type selection
-            $mimetypefilter = '';
-            switch ($this->filetype) {
+            $mimetype_filter = '';
+            switch ($this->file_type) {
                 case 'image':
-                    $mimetypefilter = "AND f.mimetype LIKE 'image/%'";
+                    $mimetype_filter = "AND f.mimetype LIKE 'image/%'";
                     break;
                 case 'pdf':
-                    $mimetypefilter = "AND f.mimetype = 'application/pdf'";
+                    $mimetype_filter = "AND f.mimetype = 'application/pdf'";
                     break;
                 case 'zip':
-                    $mimetypefilter = "AND (f.mimetype LIKE 'application/zip%' OR f.mimetype LIKE 'application/x-%')";
+                    $mimetype_filter = "AND (f.mimetype LIKE 'application/zip%' OR f.mimetype LIKE 'application/x-%')";
                     break;
                 case 'doc':
-                    $mimetypefilter = "AND (f.mimetype LIKE 'application/msword%' OR f.mimetype LIKE 'application/vnd.%' OR f.mimetype = 'text/plain')";
+                    $mimetype_filter = "AND (f.mimetype LIKE 'application/msword%' OR f.mimetype LIKE 'application/vnd.%' OR f.mimetype = 'text/plain')";
                     break;
                 case 'video':
-                    $mimetypefilter = "AND f.mimetype LIKE 'video/%'";
+                    $mimetype_filter = "AND f.mimetype LIKE 'video/%'";
                     break;
                 case 'audio':
-                    $mimetypefilter = "AND f.mimetype LIKE 'audio/%'";
+                    $mimetype_filter = "AND f.mimetype LIKE 'audio/%'";
                     break;
                 default:
                     // Default to images if invalid type provided
-                    $mimetypefilter = "AND f.mimetype LIKE 'image/%'";
+                    $mimetype_filter = "AND f.mimetype LIKE 'image/%'";
                     break;
             }
 
             // Convert wildcards to SQL LIKE pattern
-            $searchpattern = $this->config['search_term'];
+            $search_pattern = $this->config['search_term'];
             // If user provided wildcards, convert them to SQL LIKE pattern
-            if (strpos($searchpattern, '*') !== false || strpos($searchpattern, '?') !== false) {
+            if (strpos($search_pattern, '*') !== false || strpos($search_pattern, '?') !== false) {
                 // Check if pattern already covers full filename (starts/ends with wildcards)
-                $hasLeadingWildcard = (substr($searchpattern, 0, 1) === '*');
-                $hasTrailingWildcard = (substr($searchpattern, -1) === '*');
+                $has_leading_wildcard = (substr($search_pattern, 0, 1) === '*');
+                $has_trailing_wildcard = (substr($search_pattern, -1) === '*');
                 
                 // Escape SQL special characters
-                $searchpattern = str_replace(['%', '_'], ['\%', '\_'], $searchpattern);
+                $search_pattern = str_replace(['%', '_'], ['\%', '\_'], $search_pattern);
                 // Convert wildcards: * to %, ? to _
-                $searchpattern = str_replace(['*', '?'], ['%', '_'], $searchpattern);
+                $search_pattern = str_replace(['*', '?'], ['%', '_'], $search_pattern);
                 
                 // If no leading wildcard, add one to allow matching anywhere in filename
-                if (!$hasLeadingWildcard) {
-                    $searchpattern = '%' . $searchpattern;
+                if (!$has_leading_wildcard) {
+                    $search_pattern = '%' . $search_pattern;
                 }
                 
                 // If no trailing wildcard, add one to allow matching anywhere in filename
-                if (!$hasTrailingWildcard) {
-                    $searchpattern = $searchpattern . '%';
+                if (!$has_trailing_wildcard) {
+                    $search_pattern = $search_pattern . '%';
                 }
             } else {
                 // No wildcards, use substring match
-                $searchpattern = '%' . $searchpattern . '%';
+                $search_pattern = '%' . $search_pattern . '%';
             }
 
             $sql = "SELECT f.id, f.contenthash, f.filename, f.filesize, f.mimetype,
                            f.contextid, f.component, f.filearea, f.itemid, f.filepath
                     FROM {files} f
                     WHERE " . $DB->sql_like('f.filename', ':searchterm', false) . "
-                    $mimetypefilter
+                    $mimetype_filter
                     AND f.filename != '.'
                     ORDER BY f.filename";
 
-            $results = $DB->get_records_sql($sql, ['searchterm' => $searchpattern]);
+            $results = $DB->get_records_sql($sql, ['searchterm' => $search_pattern]);
 
             $this->add_output("Found " . count($results) . " matching files in database", 'success');
 
@@ -509,7 +509,7 @@ class replacer {
         foreach ($files as $index => $filepath) {
             $this->stats['files_found']++;
             $filename = basename($filepath);
-            $relativepath = str_replace($this->moodleroot . '/', '', $filepath);
+            $relativepath = str_replace($this->moodle_root . '/', '', $filepath);
 
             $this->add_output("\nProcessing file " . ($index + 1) . "/" . count($files) . ": $filename", 'info');
             $this->add_output("Path: $relativepath", 'info');
@@ -531,25 +531,25 @@ class replacer {
      * @param array $dbfiles Array of file records
      * @return bool Success status
      */
-    public function process_database_files($dbfiles) {
+    public function process_database_files($db_files) {
         global $CFG;
 
-        if (empty($dbfiles)) {
+        if (empty($db_files)) {
             return true;
         }
 
-        $this->add_output("\nProcessing " . count($dbfiles) . " database files...", 'info');
+        $this->add_output("\nProcessing " . count($db_files) . " database files...", 'info');
 
-        foreach ($dbfiles as $index => $filerecord) {
+        foreach ($db_files as $index => $file_record) {
             $this->stats['db_files_found']++;
 
-            $this->add_output("\nProcessing DB file " . ($index + 1) . "/" . count($dbfiles) .
-                ": " . $filerecord->filename, 'info');
-            $this->add_output("Context: " . $filerecord->component . "/" . $filerecord->filearea, 'info');
-            $this->add_output("Size: " . $this->format_file_size($filerecord->filesize), 'info');
-            $this->add_output("MIME: " . $filerecord->mimetype, 'info');
+            $this->add_output("\nProcessing DB file " . ($index + 1) . "/" . count($db_files) .
+                ": " . $file_record->filename, 'info');
+            $this->add_output("Context: " . $file_record->component . "/" . $file_record->filearea, 'info');
+            $this->add_output("Size: " . $this->format_file_size($file_record->filesize), 'info');
+            $this->add_output("MIME: " . $file_record->mimetype, 'info');
 
-            if ($this->replace_database_file($filerecord)) {
+            if ($this->replace_database_file($file_record)) {
                 $this->stats['db_files_replaced']++;
             } else {
                 $this->stats['db_files_failed']++;
@@ -565,62 +565,62 @@ class replacer {
      * @param string $targetpath Path to target file
      * @return bool Success status
      */
-    private function replace_filesystem_file($targetpath) {
+    private function replace_filesystem_file($target_path) {
         try {
             // Validate extension match before proceeding
-            if (!$this->validate_extension_match($this->sourcefilepath, $targetpath)) {
+            if (!$this->validate_extension_match($this->source_file_path, $target_path)) {
                 $this->stats['files_failed']++;
-                $this->add_to_replacement_log($targetpath, 'filesystem', false, 'Extension mismatch');
+                $this->add_to_replacement_log($target_path, 'filesystem', false, 'Extension mismatch');
                 return false;
             }
 
             // Check if we're dealing with an image file
-            if ($this->is_image_file($targetpath) && isset($this->sourceimage['is_image']) && $this->sourceimage['is_image']) {
+            if ($this->is_image_file($target_path) && isset($this->source_image['is_image']) && $this->source_image['is_image']) {
                 // Image-to-image replacement with resizing
-                $targetinfo = getimagesize($targetpath);
-                if ($targetinfo === false) {
+                $target_info = getimagesize($target_path);
+                if ($target_info === false) {
                     $this->add_output("Could not read target image dimensions", 'error');
                     return false;
                 }
 
-                $targetwidth = $targetinfo[0];
-                $targetheight = $targetinfo[1];
-                $targettype = $targetinfo[2];
+                $target_width = $target_info[0];
+                $target_height = $target_info[1];
+                $target_type = $target_info[2];
 
-                $this->add_output("Target format: " . $this->get_format_name($targettype) .
-                    ", Target size: {$targetwidth}x{$targetheight}", 'info');
+                $this->add_output("Target format: " . $this->get_format_name($target_type) .
+                    ", Target size: {$target_width}x{$target_height}", 'info');
 
                 if ($this->config['dry_run']) {
                     $this->add_output("[DRY RUN] Would replace with converted image", 'warning');
                     return true;
                 }
 
-                $originalperms = fileperms($targetpath);
+                $original_perms = fileperms($target_path);
 
-                $resizedimage = $this->resize_image(
-                    $this->sourceimageresource,
-                    $this->sourceimage['width'],
-                    $this->sourceimage['height'],
-                    $targetwidth,
-                    $targetheight
+                $resized_image = $this->resize_image(
+                    $this->source_image_resource,
+                    $this->source_image['width'],
+                    $this->source_image['height'],
+                    $target_width,
+                    $target_height
                 );
 
-                $success = $this->save_image($resizedimage, $targetpath, $targettype);
+                $success = $this->save_image($resized_image, $target_path, $target_type);
 
-                if ($resizedimage !== $this->sourceimageresource) {
-                    imagedestroy($resizedimage);
+                if ($resized_image !== $this->source_image_resource) {
+                    imagedestroy($resized_image);
                 }
 
                 if ($success) {
-                    if ($this->config['preserve_permissions'] && $originalperms !== false) {
-                        chmod($targetpath, $originalperms);
+                    if ($this->config['preserve_permissions'] && $original_perms !== false) {
+                        chmod($target_path, $original_perms);
                     }
                     $this->add_output("Successfully replaced image", 'success');
-                    $this->add_to_replacement_log($targetpath, 'filesystem', true, 'Image replaced successfully');
+                    $this->add_to_replacement_log($target_path, 'filesystem', true, 'Image replaced successfully');
                     return true;
                 } else {
                     $this->add_output("Failed to save converted image", 'error');
-                    $this->add_to_replacement_log($targetpath, 'filesystem', false, 'Failed to save converted image');
+                    $this->add_to_replacement_log($target_path, 'filesystem', false, 'Failed to save converted image');
                     return false;
                 }
             } else {
@@ -630,26 +630,26 @@ class replacer {
                     return true;
                 }
 
-                $originalperms = fileperms($targetpath);
+                $original_perms = fileperms($target_path);
                 
-                if (!copy($this->sourceimage['filepath'], $targetpath)) {
+                if (!copy($this->source_image['filepath'], $target_path)) {
                     $this->add_output("Failed to copy file", 'error');
-                    $this->add_to_replacement_log($targetpath, 'filesystem', false, 'Failed to copy file');
+                    $this->add_to_replacement_log($target_path, 'filesystem', false, 'Failed to copy file');
                     return false;
                 }
 
-                if ($this->config['preserve_permissions'] && $originalperms !== false) {
-                    chmod($targetpath, $originalperms);
+                if ($this->config['preserve_permissions'] && $original_perms !== false) {
+                    chmod($target_path, $original_perms);
                 }
 
                 $this->add_output("Successfully replaced file", 'success');
-                $this->add_to_replacement_log($targetpath, 'filesystem', true, 'File replaced successfully');
+                $this->add_to_replacement_log($target_path, 'filesystem', true, 'File replaced successfully');
                 return true;
             }
 
         } catch (\Exception $e) {
             $this->add_output("Error replacing file: " . $e->getMessage(), 'error');
-            $this->add_to_replacement_log($targetpath, 'filesystem', false, 'Error: ' . $e->getMessage());
+            $this->add_to_replacement_log($target_path, 'filesystem', false, 'Error: ' . $e->getMessage());
             return false;
         }
     }
@@ -660,96 +660,96 @@ class replacer {
      * @param object $filerecord File record from database
      * @return bool Success status
      */
-    private function replace_database_file($filerecord) {
+    private function replace_database_file($file_record) {
         global $CFG, $DB;
 
         try {
-            $filepath = $this->get_file_path_from_hash($filerecord->contenthash);
+            $filepath = $this->get_file_path_from_hash($file_record->contenthash);
 
             if (!file_exists($filepath)) {
                 $this->add_output("Physical file not found: $filepath", 'error');
-                $this->add_to_replacement_log($filerecord->filename, 'database', false, 
-                    'Physical file not found (ID: ' . $filerecord->id . ')', $filerecord);
+                $this->add_to_replacement_log($file_record->filename, 'database', false, 
+                    'Physical file not found (ID: ' . $file_record->id . ')', $file_record);
                 return false;
             }
 
             // Validate extension match before proceeding
-            if (!$this->validate_extension_match($this->sourcefilepath, $filerecord->filename)) {
+            if (!$this->validate_extension_match($this->source_file_path, $file_record->filename)) {
                 $this->stats['files_failed']++;
-                $this->add_to_replacement_log($filerecord->filename, 'database', false, 
-                    'Extension mismatch (ID: ' . $filerecord->id . ')', $filerecord);
+                $this->add_to_replacement_log($file_record->filename, 'database', false, 
+                    'Extension mismatch (ID: ' . $file_record->id . ')', $file_record);
                 return false;
             }
 
             // Check if this is an image file requiring special handling
-            $isimagerecord = strpos($filerecord->mimetype, 'image/') === 0;
+            $is_image_record = strpos($file_record->mimetype, 'image/') === 0;
             
-            if ($isimagerecord && isset($this->sourceimage['is_image']) && $this->sourceimage['is_image']) {
+            if ($is_image_record && isset($this->source_image['is_image']) && $this->source_image['is_image']) {
                 // Image-to-image replacement with resizing
-                $originalinfo = getimagesize($filepath);
-                if ($originalinfo === false) {
+                $original_info = getimagesize($filepath);
+                if ($original_info === false) {
                     $this->add_output("Could not read original image dimensions", 'error');
                     return false;
                 }
 
-                $targetwidth = $originalinfo[0];
-                $targetheight = $originalinfo[1];
-                $targettype = $originalinfo[2];
+                $target_width = $original_info[0];
+                $target_height = $original_info[1];
+                $target_type = $original_info[2];
 
-                $this->add_output("Target format: " . $this->get_format_name($targettype) .
-                    ", Target size: {$targetwidth}x{$targetheight}", 'info');
+                $this->add_output("Target format: " . $this->get_format_name($target_type) .
+                    ", Target size: {$target_width}x{$target_height}", 'info');
 
                 if ($this->config['dry_run']) {
                     $this->add_output("[DRY RUN] Would replace database image", 'warning');
                     return true;
                 }
 
-                $resizedimage = $this->resize_image(
-                    $this->sourceimageresource,
-                    $this->sourceimage['width'],
-                    $this->sourceimage['height'],
-                    $targetwidth,
-                    $targetheight
+                $resized_image = $this->resize_image(
+                    $this->source_image_resource,
+                    $this->source_image['width'],
+                    $this->source_image['height'],
+                    $target_width,
+                    $target_height
                 );
 
-                $tempfile = make_temp_directory('imagereplacer') . '/' . uniqid('img_');
-                $success = $this->save_image($resizedimage, $tempfile, $targettype);
+                $temp_file = make_temp_directory('imagereplacer') . '/' . uniqid('img_');
+                $success = $this->save_image($resized_image, $temp_file, $target_type);
 
-                if ($resizedimage !== $this->sourceimageresource) {
-                    imagedestroy($resizedimage);
+                if ($resized_image !== $this->source_image_resource) {
+                    imagedestroy($resized_image);
                 }
 
                 if (!$success) {
                     $this->add_output("Failed to create replacement image", 'error');
-                    @unlink($tempfile);
+                    @unlink($temp_file);
                     return false;
                 }
 
-                $newcontenthash = sha1_file($tempfile);
-                $newfilesize = filesize($tempfile);
-                $newfilepath = $this->get_file_path_from_hash($newcontenthash);
-                $newfiledir = dirname($newfilepath);
+                $new_content_hash = sha1_file($temp_file);
+                $new_file_size = filesize($temp_file);
+                $new_file_path = $this->get_file_path_from_hash($new_content_hash);
+                $new_file_dir = dirname($new_file_path);
 
-                if (!is_dir($newfiledir)) {
-                    mkdir($newfiledir, 0755, true);
+                if (!is_dir($new_file_dir)) {
+                    mkdir($new_file_dir, 0755, true);
                 }
 
-                if (!copy($tempfile, $newfilepath)) {
+                if (!copy($temp_file, $new_file_path)) {
                     $this->add_output("Failed to copy new file to storage", 'error');
-                    @unlink($tempfile);
+                    @unlink($temp_file);
                     return false;
                 }
 
-                @unlink($tempfile);
+                @unlink($temp_file);
 
                 // Update database record.
-                $DB->set_field('files', 'contenthash', $newcontenthash, ['id' => $filerecord->id]);
-                $DB->set_field('files', 'filesize', $newfilesize, ['id' => $filerecord->id]);
-                $DB->set_field('files', 'timemodified', time(), ['id' => $filerecord->id]);
+                $DB->set_field('files', 'contenthash', $new_content_hash, ['id' => $file_record->id]);
+                $DB->set_field('files', 'filesize', $new_file_size, ['id' => $file_record->id]);
+                $DB->set_field('files', 'timemodified', time(), ['id' => $file_record->id]);
 
                 $this->add_output("Successfully replaced database image", 'success');
-                $this->add_to_replacement_log($filerecord->filename, 'database', true, 
-                    'Image replaced successfully (ID: ' . $filerecord->id . ')', $filerecord);
+                $this->add_to_replacement_log($file_record->filename, 'database', true, 
+                    'Image replaced successfully (ID: ' . $file_record->id . ')', $file_record);
                 return true;
             } else {
                 // Non-image file replacement
@@ -758,37 +758,37 @@ class replacer {
                     return true;
                 }
 
-                $newcontenthash = sha1_file($this->sourceimage['filepath']);
-                $newfilesize = filesize($this->sourceimage['filepath']);
-                $newfilepath = $this->get_file_path_from_hash($newcontenthash);
-                $newfiledir = dirname($newfilepath);
+                $new_content_hash = sha1_file($this->source_image['filepath']);
+                $new_file_size = filesize($this->source_image['filepath']);
+                $new_file_path = $this->get_file_path_from_hash($new_content_hash);
+                $new_file_dir = dirname($new_file_path);
 
-                if (!is_dir($newfiledir)) {
-                    mkdir($newfiledir, 0755, true);
+                if (!is_dir($new_file_dir)) {
+                    mkdir($new_file_dir, 0755, true);
                 }
 
-                if (!copy($this->sourceimage['filepath'], $newfilepath)) {
+                if (!copy($this->source_image['filepath'], $new_file_path)) {
                     $this->add_output("Failed to copy new file to storage", 'error');
-                    $this->add_to_replacement_log($filerecord->filename, 'database', false, 
-                        'Failed to copy file to storage (ID: ' . $filerecord->id . ')', $filerecord);
+                    $this->add_to_replacement_log($file_record->filename, 'database', false, 
+                        'Failed to copy file to storage (ID: ' . $file_record->id . ')', $file_record);
                     return false;
                 }
 
                 // Update database record.
-                $DB->set_field('files', 'contenthash', $newcontenthash, ['id' => $filerecord->id]);
-                $DB->set_field('files', 'filesize', $newfilesize, ['id' => $filerecord->id]);
-                $DB->set_field('files', 'timemodified', time(), ['id' => $filerecord->id]);
+                $DB->set_field('files', 'contenthash', $new_content_hash, ['id' => $file_record->id]);
+                $DB->set_field('files', 'filesize', $new_file_size, ['id' => $file_record->id]);
+                $DB->set_field('files', 'timemodified', time(), ['id' => $file_record->id]);
 
                 $this->add_output("Successfully replaced database file", 'success');
-                $this->add_to_replacement_log($filerecord->filename, 'database', true, 
-                    'File replaced successfully (ID: ' . $filerecord->id . ')', $filerecord);
+                $this->add_to_replacement_log($file_record->filename, 'database', true, 
+                    'File replaced successfully (ID: ' . $file_record->id . ')', $file_record);
                 return true;
             }
 
         } catch (\Exception $e) {
             $this->add_output("Error replacing database file: " . $e->getMessage(), 'error');
-            $this->add_to_replacement_log($filerecord->filename, 'database', false, 
-                'Error: ' . $e->getMessage() . ' (ID: ' . $filerecord->id . ')', $filerecord);
+            $this->add_to_replacement_log($file_record->filename, 'database', false, 
+                'Error: ' . $e->getMessage() . ' (ID: ' . $file_record->id . ')', $file_record);
             return false;
         }
     }
@@ -797,12 +797,12 @@ class replacer {
      * Scan directory recursively for matching images
      *
      * @param string $directory Directory to scan
-     * @param string $searchtermLower Search term in lowercase
+     * @param string $search_term_lower Search term in lowercase
      * @return array Array of file paths
      */
-    private function scan_directory_recursive($directory, $searchtermLower) {
-        $matchingfiles = [];
-        $activeformats = $this->get_active_formats();
+    private function scan_directory_recursive($directory, $search_term_lower) {
+        $matching_files = [];
+        $active_formats = $this->get_active_formats();
 
         try {
             $iterator = new \RecursiveIteratorIterator(
@@ -815,9 +815,9 @@ class replacer {
                     $filename = $file->getFilename();
                     $extension = strtolower('.' . $file->getExtension());
 
-                    if (in_array($extension, $activeformats) &&
-                        $this->matches_search_term($filename, $searchtermLower)) {
-                        $matchingfiles[] = $file->getPathname();
+                    if (in_array($extension, $active_formats) &&
+                        $this->matches_search_term($filename, $search_term_lower)) {
+                        $matching_files[] = $file->getPathname();
                     }
                 }
             }
@@ -825,23 +825,23 @@ class replacer {
             $this->add_output("Error scanning directory $directory: " . $e->getMessage(), 'error');
         }
 
-        return $matchingfiles;
+        return $matching_files;
     }
 
     /**
      * Scan single directory (non-recursive)
      *
      * @param string $directory Directory to scan
-     * @param string $searchtermLower Search term in lowercase
+     * @param string $search_term_lower Search term in lowercase
      * @param bool $recursive Whether to scan recursively
      * @return array Array of file paths
      */
-    private function scan_directory($directory, $searchtermLower, $recursive = true) {
-        $matchingfiles = [];
-        $activeformats = $this->get_active_formats();
+    private function scan_directory($directory, $search_term_lower, $recursive = true) {
+        $matching_files = [];
+        $active_formats = $this->get_active_formats();
 
         if (!is_dir($directory)) {
-            return $matchingfiles;
+            return $matching_files;
         }
 
         $files = scandir($directory);
@@ -850,39 +850,39 @@ class replacer {
                 continue;
             }
 
-            $fullpath = $directory . '/' . $file;
+            $full_path = $directory . '/' . $file;
 
-            if (is_file($fullpath)) {
+            if (is_file($full_path)) {
                 $extension = strtolower('.' . pathinfo($file, PATHINFO_EXTENSION));
 
-                if (in_array($extension, $activeformats) &&
-                    $this->matches_search_term($file, $searchtermLower)) {
-                    $matchingfiles[] = $fullpath;
+                if (in_array($extension, $active_formats) &&
+                    $this->matches_search_term($file, $search_term_lower)) {
+                    $matching_files[] = $full_path;
                 }
             }
         }
 
-        return $matchingfiles;
+        return $matching_files;
     }
 
     /**
      * Resize image
      *
-     * @param resource $sourceresource Source image resource
-     * @param int $sourcewidth Source width
-     * @param int $sourceheight Source height
-     * @param int $targetwidth Target width
-     * @param int $targetheight Target height
+     * @param resource $source_resource Source image resource
+     * @param int $source_width Source width
+     * @param int $source_height Source height
+     * @param int $target_width Target width
+     * @param int $target_height Target height
      * @return resource Resized image resource
      */
-    private function resize_image($sourceresource, $sourcewidth, $sourceheight, $targetwidth, $targetheight) {
-        if ($sourcewidth == $targetwidth && $sourceheight == $targetheight) {
-            return $sourceresource;
+    private function resize_image($source_resource, $source_width, $source_height, $target_width, $target_height) {
+        if ($source_width == $target_width && $source_height == $target_height) {
+            return $source_resource;
         }
 
-        $this->add_output("Resizing from {$sourcewidth}x{$sourceheight} to {$targetwidth}x{$targetheight}", 'info');
+        $this->add_output("Resizing from {$source_width}x{$source_height} to {$target_width}x{$target_height}", 'info');
 
-        $resized = imagecreatetruecolor($targetwidth, $targetheight);
+        $resized = imagecreatetruecolor($target_width, $target_height);
 
         imagealphablending($resized, false);
         imagesavealpha($resized, true);
@@ -892,12 +892,12 @@ class replacer {
 
         imagecopyresampled(
             $resized,
-            $sourceresource,
+            $source_resource,
             0, 0, 0, 0,
-            $targetwidth,
-            $targetheight,
-            $sourcewidth,
-            $sourceheight
+            $target_width,
+            $target_height,
+            $source_width,
+            $source_height
         );
 
         return $resized;
@@ -906,31 +906,31 @@ class replacer {
     /**
      * Save image to file
      *
-     * @param resource $imageresource Image resource
-     * @param string $filepath File path
-     * @param int $targettype Image type constant
+     * @param resource $image_resource Image resource
+     * @param string $file_path File path
+     * @param int $target_type Image type constant
      * @return bool Success status
      */
-    private function save_image($imageresource, $filepath, $targettype) {
-        switch ($targettype) {
+    private function save_image($image_resource, $file_path, $target_type) {
+        switch ($target_type) {
             case IMAGETYPE_JPEG:
-                $jpegimage = imagecreatetruecolor(imagesx($imageresource), imagesy($imageresource));
-                imagefill($jpegimage, 0, 0, imagecolorallocate($jpegimage, 255, 255, 255));
-                imagecopy($jpegimage, $imageresource, 0, 0, 0, 0,
-                    imagesx($imageresource), imagesy($imageresource));
-                $result = imagejpeg($jpegimage, $filepath, 95);
-                imagedestroy($jpegimage);
+                $jpeg_image = imagecreatetruecolor(imagesx($image_resource), imagesy($image_resource));
+                imagefill($jpeg_image, 0, 0, imagecolorallocate($jpeg_image, 255, 255, 255));
+                imagecopy($jpeg_image, $image_resource, 0, 0, 0, 0,
+                    imagesx($image_resource), imagesy($image_resource));
+                $result = imagejpeg($jpeg_image, $file_path, 95);
+                imagedestroy($jpeg_image);
                 return $result;
 
             case IMAGETYPE_PNG:
-                imagesavealpha($imageresource, true);
-                return imagepng($imageresource, $filepath, 9);
+                imagesavealpha($image_resource, true);
+                return imagepng($image_resource, $file_path, 9);
 
             case IMAGETYPE_WEBP:
                 if (function_exists('imagewebp')) {
-                    return imagewebp($imageresource, $filepath, 95);
+                    return imagewebp($image_resource, $file_path, 95);
                 } else {
-                    return imagepng($imageresource, $filepath, 9);
+                    return imagepng($image_resource, $file_path, 9);
                 }
 
             default:
@@ -944,11 +944,11 @@ class replacer {
      * @param string $contenthash Content hash
      * @return string File path
      */
-    private function get_file_path_from_hash($contenthash) {
+    private function get_file_path_from_hash($content_hash) {
         global $CFG;
-        $l1 = substr($contenthash, 0, 2);
-        $l2 = substr($contenthash, 2, 2);
-        return $CFG->dataroot . '/filedir/' . $l1 . '/' . $l2 . '/' . $contenthash;
+        $l1 = substr($content_hash, 0, 2);
+        $l2 = substr($content_hash, 2, 2);
+        return $CFG->dataroot . '/filedir/' . $l1 . '/' . $l2 . '/' . $content_hash;
     }
 
     /**
@@ -1023,7 +1023,7 @@ class replacer {
      * @return array Replacement log entries
      */
     public function get_replacement_log() {
-        return $this->replacementlog;
+        return $this->replacement_log;
     }
 
     /**
@@ -1035,7 +1035,7 @@ class replacer {
      * @param string $message Status message
      * @param object|null $filerecord Database file record (for database files)
      */
-    private function add_to_replacement_log($filename, $type, $success, $message, $filerecord = null) {
+    private function add_to_replacement_log($filename, $type, $success, $message, $file_record = null) {
         $entry = [
             'filename' => $filename,
             'type' => $type,
@@ -1044,15 +1044,15 @@ class replacer {
             'timestamp' => time(),
         ];
 
-        if ($filerecord) {
-            $entry['component'] = $filerecord->component ?? '';
-            $entry['filearea'] = $filerecord->filearea ?? '';
-            $entry['filepath'] = $filerecord->filepath ?? '';
-            $entry['contextid'] = $filerecord->contextid ?? 0;
-            $entry['itemid'] = $filerecord->itemid ?? 0;
+        if ($file_record) {
+            $entry['component'] = $file_record->component ?? '';
+            $entry['filearea'] = $file_record->filearea ?? '';
+            $entry['filepath'] = $file_record->filepath ?? '';
+            $entry['contextid'] = $file_record->contextid ?? 0;
+            $entry['itemid'] = $file_record->itemid ?? 0;
         }
 
-        $this->replacementlog[] = $entry;
+        $this->replacement_log[] = $entry;
     }
 
     /**
@@ -1061,11 +1061,11 @@ class replacer {
      * @param int $userid User ID
      * @return bool Success status
      */
-    public function log_operation($userid) {
+    public function log_operation($user_id) {
         global $DB;
 
         $record = new \stdClass();
-        $record->userid = $userid;
+        $record->userid = $user_id;
         $record->searchterm = $this->config['search_term'];
         $record->filesreplaced = $this->stats['files_replaced'];
         $record->dbfilesreplaced = $this->stats['db_files_replaced'];
@@ -1073,7 +1073,7 @@ class replacer {
         $record->dryrun = $this->config['dry_run'] ? 1 : 0;
         $record->searchdatabase = $this->config['search_database'] ? 1 : 0;
         $record->searchfilesystem = $this->config['search_filesystem'] ? 1 : 0;
-        $record->sourceimageinfo = json_encode($this->sourceimage);
+        $record->sourceimageinfo = json_encode($this->source_image);
         $record->timecreated = time();
         $record->timemodified = time();
 
@@ -1089,8 +1089,8 @@ class replacer {
      * Cleanup resources
      */
     public function __destruct() {
-        if ($this->sourceimageresource) {
-            imagedestroy($this->sourceimageresource);
+        if ($this->source_image_resource) {
+            imagedestroy($this->source_image_resource);
         }
     }
 }
