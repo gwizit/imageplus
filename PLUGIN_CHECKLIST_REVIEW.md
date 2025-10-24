@@ -46,9 +46,9 @@ $plugin->component = 'local_imageplus';
 
 **Added to header section:**
 ```markdown
-**Source Code:** [https://github.com/gwizit/imageplus](https://github.com/gwizit/imageplus)  
-**Bug Tracker:** [https://github.com/gwizit/imageplus/issues](https://github.com/gwizit/imageplus/issues)  
-**Documentation:** [README.md](https://github.com/gwizit/imageplus/blob/main/imageplus/README.md)
+**Source Code:** [https://github.com/gwizit/moodle-local_imageplus](https://github.com/gwizit/moodle-local_imageplus)  
+**Bug Tracker:** [https://github.com/gwizit/moodle-local_imageplus/issues](https://github.com/gwizit/moodle-local_imageplus/issues)  
+**Documentation:** [README.md](https://github.com/gwizit/moodle-local_imageplus/blob/main/imageplus/README.md)
 ```
 
 **Updated Support section:**
@@ -57,8 +57,8 @@ $plugin->component = 'local_imageplus';
 
 For issues, questions, or feature requests:
 
-- **Bug Tracker:** [GitHub Issues](https://github.com/gwizit/imageplus/issues)
-- **Source Code:** [GitHub Repository](https://github.com/gwizit/imageplus)
+- **Bug Tracker:** [GitHub Issues](https://github.com/gwizit/moodle-local_imageplus/issues)
+- **Source Code:** [GitHub Repository](https://github.com/gwizit/moodle-local_imageplus)
 - **Website:** [https://gwizit.com](https://gwizit.com)
 - **Email:** Contact through gwizit.com
 ```
@@ -69,8 +69,8 @@ For issues, questions, or feature requests:
 
 Contributions are welcome! 
 
-- **Report bugs:** [GitHub Issues](https://github.com/gwizit/imageplus/issues)
-- **Submit pull requests:** [GitHub Repository](https://github.com/gwizit/imageplus)
+- **Report bugs:** [GitHub Issues](https://github.com/gwizit/moodle-local_imageplus/issues)
+- **Submit pull requests:** [GitHub Repository](https://github.com/gwizit/moodle-local_imageplus)
 - **Contact us:** Through [gwizit.com](https://gwizit.com)
 
 Please follow Moodle coding standards when contributing.
@@ -80,7 +80,7 @@ Please follow Moodle coding standards when contributing.
 
 ### 3. ✅ GitHub Issues Tracker - Confirmed Active
 
-**URL:** https://github.com/gwizit/imageplus/issues  
+**URL:** https://github.com/gwizit/moodle-local_imageplus/issues  
 **Status:** ✅ **Active and publicly accessible**
 
 Verified features:
@@ -262,7 +262,7 @@ Verified features:
 
 ### How to Rename (If You Choose To)
 
-1. Go to: https://github.com/gwizit/imageplus/settings
+1. Go to: https://github.com/gwizit/moodle-local_imageplus/settings
 2. Scroll to "Rename repository" section
 3. Change name to: `moodle-local_imageplus`
 4. Click "Rename"
@@ -359,8 +359,8 @@ The checklist identifies these as **approval blockers**. Let's verify:
    - [ ] **Full description**: Use content from README.md
 
 3. **Submission Details**
-   - [ ] **Source repository:** https://github.com/gwizit/imageplus
-   - [ ] **Bug tracker:** https://github.com/gwizit/imageplus/issues
+   - [ ] **Source repository:** https://github.com/gwizit/moodle-local_imageplus
+   - [ ] **Bug tracker:** https://github.com/gwizit/moodle-local_imageplus/issues
    - [ ] **Documentation:** Link to README.md
    - [ ] **Supported versions:** Moodle 4.3 to 5.1+
    - [ ] **Screenshots:** Upload PNG files from repository
@@ -391,9 +391,9 @@ The checklist identifies these as **approval blockers**. Let's verify:
    - Plugin type: Local plugin (local)
    - Short description: *(See above)*
    - Full description: *(From README.md)*
-   - Source repository: https://github.com/gwizit/imageplus
-   - Bug tracker: https://github.com/gwizit/imageplus/issues
-   - Documentation URL: https://github.com/gwizit/imageplus/blob/main/imageplus/README.md
+   - Source repository: https://github.com/gwizit/moodle-local_imageplus
+   - Bug tracker: https://github.com/gwizit/moodle-local_imageplus/issues
+   - Documentation URL: https://github.com/gwizit/moodle-local_imageplus/blob/main/imageplus/README.md
    - Supported Moodle versions: 4.3 to 5.1+
    - License: GNU GPL v3 or later
 

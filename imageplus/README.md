@@ -8,9 +8,9 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 **Compatibility:** Moodle 4.3 to 5.1+  
 **License:** GNU GPL v3 or later
 
-**Source Code:** [https://github.com/gwizit/imageplus](https://github.com/gwizit/imageplus)  
-**Bug Tracker:** [https://github.com/gwizit/imageplus/issues](https://github.com/gwizit/imageplus/issues)  
-**Documentation:** [README.md](https://github.com/gwizit/imageplus/blob/main/imageplus/README.md)
+**Source Code:** [https://github.com/gwizit/moodle-local_imageplus](https://github.com/gwizit/moodle-local_imageplus)  
+**Bug Tracker:** [https://github.com/gwizit/moodle-local_imageplus/issues](https://github.com/gwizit/moodle-local_imageplus/issues)  
+**Documentation:** [README.md](https://github.com/gwizit/moodle-local_imageplus/blob/main/imageplus/README.md)
 
 ---
 
@@ -38,6 +38,14 @@ A powerful Moodle plugin that allows site administrators to search and replace f
 - Clear error messages and user guidance
 - Final warning before executing destructive operations
 - Better visual feedback at each step
+
+### 🏗️ Modern Architecture (v3.0.3)
+- **Mustache Templates** - Clean separation of HTML from PHP logic
+- **Moodle Output API** - Proper use of renderable/templatable interfaces
+- **ES6 JavaScript Modules** - AMD/RequireJS compliant, modular code
+- **Namespaced CSS** - All styles properly scoped with `.local-imageplus-` prefix
+- **Fully Translatable** - All user-facing strings use language string system
+- **Code Quality** - 84% reduction in renderer.php, 40% reduction in index.php
 
 ---
 
@@ -472,8 +480,8 @@ The plugin defines two capabilities and requires site administrator access:
 
 For issues, questions, or feature requests:
 
-- **Bug Tracker:** [GitHub Issues](https://github.com/gwizit/imageplus/issues)
-- **Source Code:** [GitHub Repository](https://github.com/gwizit/imageplus)
+- **Bug Tracker:** [GitHub Issues](https://github.com/gwizit/moodle-local_imageplus/issues)
+- **Source Code:** [GitHub Repository](https://github.com/gwizit/moodle-local_imageplus)
 - **Website:** [https://gwizit.com](https://gwizit.com)
 - **Email:** Contact through gwizit.com
 
@@ -569,8 +577,8 @@ This plugin implements Moodle's Privacy API and is GDPR compliant:
 
 Contributions are welcome! 
 
-- **Report bugs:** [GitHub Issues](https://github.com/gwizit/imageplus/issues)
-- **Submit pull requests:** [GitHub Repository](https://github.com/gwizit/imageplus)
+- **Report bugs:** [GitHub Issues](https://github.com/gwizit/moodle-local_imageplus/issues)
+- **Submit pull requests:** [GitHub Repository](https://github.com/gwizit/moodle-local_imageplus)
 - **Contact us:** Through [gwizit.com](https://gwizit.com)
 
 Please follow Moodle coding standards when contributing.

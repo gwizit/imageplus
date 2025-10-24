@@ -661,7 +661,7 @@ This plugin has been thoroughly reviewed against:
 
 **Developer:** G Wiz IT Solutions  
 **Website:** https://gwizit.com  
-**Bug Tracker:** https://github.com/gwizit/imageplus/issues  
+**Bug Tracker:** https://github.com/gwizit/moodle-local_imageplus/issues  
 
 For security issues, please follow [Moodle's security disclosure process](https://moodledev.io/general/development/process#security-issues).
 

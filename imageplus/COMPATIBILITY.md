@@ -330,9 +330,9 @@
 
 **Website:** https://gwizit.com  ## Support Statement
 
-**Bug Tracker:** https://github.com/gwizit/imageplus/issues  
+**Bug Tracker:** https://github.com/gwizit/moodle-local_imageplus/issues  
 
-**Source Code:** https://github.com/gwizit/imageplus  **G Wiz IT Solutions** commits to maintaining compatibility with:
+**Source Code:** https://github.com/gwizit/moodle-local_imageplus  **G Wiz IT Solutions** commits to maintaining compatibility with:
 
 **License:** GNU GPL v3 or later- Current Moodle LTS version and newer
 

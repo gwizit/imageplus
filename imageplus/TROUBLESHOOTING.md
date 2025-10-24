@@ -499,8 +499,8 @@ When reporting issues, include:
 
 ### Contact Support
 
-- **Bug Tracker:** https://github.com/gwizit/imageplus/issues
-- **Source Code:** https://github.com/gwizit/imageplus
+- **Bug Tracker:** https://github.com/gwizit/moodle-local_imageplus/issues
+- **Source Code:** https://github.com/gwizit/moodle-local_imageplus
 - **Website:** https://gwizit.com
 - **Documentation:** See README.md, COMPATIBILITY.md, SECURITY_REVIEW.md
 

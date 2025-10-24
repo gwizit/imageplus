@@ -23,6 +23,7 @@ ImagePlus is a powerful Moodle plugin that allows site administrators to search 
 - 📊 Detailed operation logging and results
 - ✅ GDPR compliant with Privacy API
 - 🛡️ A+ Security Rating (see SECURITY_REVIEW.md)
+- 🏗️ Modern architecture with Mustache templates, Output API, and ES6 modules
 
 ---
 
@@ -76,8 +77,8 @@ For detailed installation instructions, see [imageplus/README.md](imageplus/READ
 
 ## 🔗 Links
 
-- **Source Code:** https://github.com/gwizit/imageplus
-- **Bug Tracker:** https://github.com/gwizit/imageplus/issues
+- **Source Code:** https://github.com/gwizit/moodle-local_imageplus
+- **Bug Tracker:** https://github.com/gwizit/moodle-local_imageplus/issues
 - **Developer Website:** https://gwizit.com
 - **Moodle Plugins Directory:** *(pending submission)*
 
@@ -93,6 +94,8 @@ For detailed installation instructions, see [imageplus/README.md](imageplus/READ
 - ✅ GitHub Issues tracker active
 - ✅ Comprehensive documentation
 - ✅ Moodle 4.3 - 5.1+ compatible
+- ✅ Modern architecture with proper template separation
+- ✅ Repository follows naming convention: `moodle-local_imageplus`
 
 See [PLUGIN_CHECKLIST_REVIEW.md](PLUGIN_CHECKLIST_REVIEW.md) for detailed compliance status.
 
@@ -155,8 +158,8 @@ See [imageplus/COMPATIBILITY.md](imageplus/COMPATIBILITY.md) for detailed compat
 
 Contributions are welcome!
 
-- **Report bugs:** https://github.com/gwizit/imageplus/issues
-- **Submit pull requests:** https://github.com/gwizit/imageplus
+- **Report bugs:** https://github.com/gwizit/moodle-local_imageplus/issues
+- **Submit pull requests:** https://github.com/gwizit/moodle-local_imageplus
 - **Contact us:** Through https://gwizit.com
 
 Please follow Moodle coding standards when contributing.
@@ -174,7 +177,7 @@ This plugin is licensed under the [GNU GPL v3 or later](LICENSE).
 **Found this plugin useful?** Consider supporting its development!
 
 - **Donate:** https://square.link/u/9SpmIaIW
-- **Report issues:** https://github.com/gwizit/imageplus/issues
+- **Report issues:** https://github.com/gwizit/moodle-local_imageplus/issues
 - **Professional support:** Contact via https://gwizit.com
 
 ---
