@@ -1,8 +1,8 @@
-# Manual Installation Helper for Moodle Image Replacer Plugin
+# Manual Installation Helper for Moodle ImagePlus Plugin
 # Use this if ZIP upload doesn't work
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Moodle Image Replacer - Manual Install" -ForegroundColor Cyan
+Write-Host "Moodle ImagePlus - Manual Install" -ForegroundColor Cyan
 Write-Host "By G Wiz IT Solutions" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
@@ -25,8 +25,19 @@ if (-not (Test-Path "$MoodlePath\config.php")) {
     exit 1
 }
 
-$SourceDir = "F:\moodleimagereplacer\imagereplacer"
-$DestDir = "$MoodlePath\local\imagereplacer"
+# Determine source directory dynamically
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$SourceDir = Join-Path $ScriptDir "imageplus"
+
+# Verify source directory exists
+if (-not (Test-Path $SourceDir)) {
+    Write-Host "ERROR: Plugin source directory not found at: $SourceDir" -ForegroundColor Red
+    Write-Host "Press any key to exit..."
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    exit 1
+}
+
+$DestDir = "$MoodlePath\local\imageplus"
 
 Write-Host "Source: $SourceDir" -ForegroundColor Green
 Write-Host "Destination: $DestDir" -ForegroundColor Green
@@ -70,7 +81,7 @@ $requiredFiles = @(
     "classes\replacer.php",
     "db\install.xml",
     "db\access.php",
-    "lang\en\local_imagereplacer.php"
+    "lang\en\local_imageplus.php"
 )
 
 $allFound = $true
@@ -97,7 +108,7 @@ if ($allFound) {
     Write-Host "4. Follow the on-screen instructions" -ForegroundColor White
     Write-Host ""
     Write-Host "After installation:" -ForegroundColor Yellow
-    Write-Host "Access the tool at: Site administration → Server → Image Replacer" -ForegroundColor White
+    Write-Host "Access the tool at: Site administration → Server → ImagePlus" -ForegroundColor White
 } else {
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host "⚠ Installation incomplete!" -ForegroundColor Red
